@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Private_Message.cpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: prossi <prossi@student.42adel.org.au>      +#+  +:+       +#+        */
+/*   By: djacobs <djacobs@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/01 12:37:14 by prossi            #+#    #+#             */
-/*   Updated: 2023/02/02 14:01:04 by prossi           ###   ########.fr       */
+/*   Updated: 2024/05/24 22:26:13 by djacobs          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,8 @@
 
 String RPL_PRIVMSG(Client cl, String recipient, String message)
 {
-    return (":" + cl.getNickname() + " Private Message " + recipient + " :" + message);
+    return (":" + cl.getNickname() + '!' + cl.getUsername() + '@' + cl.getHostname() + " PRIVMSG " + recipient + " :" + message);
+    //return (":" + cl.getNickname() + " Private Message " + recipient + " :" + message);
 }
 
 String      getMessage(std::vector<String> params)

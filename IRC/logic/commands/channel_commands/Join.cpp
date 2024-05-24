@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Join.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: prossi <prossi@student.42adel.org.au>      +#+  +:+       +#+        */
+/*   By: djacobs <djacobs@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/01 12:37:14 by prossi            #+#    #+#             */
-/*   Updated: 2023/02/02 14:23:51 by prossi           ###   ########.fr       */
+/*   Updated: 2024/05/24 22:11:43 by djacobs          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,6 +95,7 @@ int         Server::cmdJoin(std::vector<String> params, Client &cl)
 			return -1;
 		}
         chan->addClient(cl);
+        std::cout << "CHANNEL_CLIENT_FD" << chan->getFdOp() << std::endl;
         join(*chan, cl);
     }
     catch(const std::exception& e)

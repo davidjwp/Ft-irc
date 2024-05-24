@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   classes.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: prossi <prossi@student.42adel.org.au>      +#+  +:+       +#+        */
+/*   By: djacobs <djacobs@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/01 12:37:14 by prossi            #+#    #+#             */
-/*   Updated: 2023/02/02 14:23:44 by prossi           ###   ########.fr       */
+/*   Updated: 2024/05/24 22:22:02 by djacobs          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@
 */
 
 /* ***************************** SERVER CLASS ******************************* */
+
 
 Server::Server(int port, const String &pass)
 	: _host("127.0.0.1"), _password(pass), _operPassword("operator's password"), _port(port) 
@@ -194,11 +195,11 @@ void	Server::parseCmd(String str, Client &cl)
 	std::vector<String>	args;
 	std::stringstream ss(str);
 	std::getline(ss, tmp, ' ');
-
+	
 	args.push_back(tmp);
   	std::cout << "Parse command : [" << tmp << "]" << std::endl;
 
-	std::string cmds[15] = {"PASSWORD", "NICKNAME", "OPERATOR", "USER", "PRIVATE MESSAGE", "JOIN", "KILL", "PING", "PART", "LIST", "NAMES", "TOPIC", "KICK", "MODE", "NOTICE"};
+	std::string cmds[15] = {"PASS", "NICK", "OPER", "USER", "PRIVMSG", "JOIN", "KILL", "PING", "PART", "LIST", "NAMES", "TOPIC", "KICK", "MODE", "NOTICE"};
 
 	int		(Server::*ptr[15])(std::vector<String> args, Client &cl) = {
 			&Server::cmdPass,
@@ -394,6 +395,10 @@ void	Channel::broadcast(std::string message, Client &cl)
 	{
 		if (cl.getFd() != _clients[i].getFd())
 		{
+			//debug
+			std::cout << "message: " << message.c_str() << std::endl;
+			//
+			
 			if (send(_clients[i].getFd(), message.c_str(), message.length(), 0) < 0)
 				throw std::out_of_range("error while broadcasting");
 		}
@@ -427,7 +432,7 @@ String  Client::getPrefix()
 
 void    Client::reply(String msg) 
 {
-    String prefix = _nickname + (_username.empty() ? "" : "!" + _username) + (_hostname.empty() ? "" : "@" + _hostname);
+    String prefix = _nickname + (_username.empty() ? "" : "!" + _username) + (_hostname.empty() ? "" : "@" + _hostname);//this is good
     String paquet = ":" + prefix + " " + msg + "\r\n";
     std::cout << "---> " << paquet << std::endl;
     if (send(_sockfd, paquet.c_str(), paquet.length(), 0) < 0)
@@ -436,7 +441,11 @@ void    Client::reply(String msg)
 
 void    Client::welcome() 
 {
-    if (_state != LOGIN || _nickname.empty() || _username.empty())
+    //debug
+	//std::cout << "LOGIN=" << _state << " NICK=" << _nickname << " USER=" << _username << std::endl;
+
+	//
+	if (_state != LOGIN || _nickname.empty() || _username.empty())
     {
         std::cout << "Waiting registration... " << _nickname << std::endl;
         return ;
