@@ -6,7 +6,7 @@
 /*   By: djacobs <djacobs@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/01 12:37:14 by prossi            #+#    #+#             */
-/*   Updated: 2024/05/24 22:22:02 by djacobs          ###   ########.fr       */
+/*   Updated: 2024/05/25 00:57:37 by djacobs          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -395,10 +395,6 @@ void	Channel::broadcast(std::string message, Client &cl)
 	{
 		if (cl.getFd() != _clients[i].getFd())
 		{
-			//debug
-			std::cout << "message: " << message.c_str() << std::endl;
-			//
-			
 			if (send(_clients[i].getFd(), message.c_str(), message.length(), 0) < 0)
 				throw std::out_of_range("error while broadcasting");
 		}

@@ -12,7 +12,7 @@
 #include <signal.h>
 #include <vector>
 #include <exception>
-
+#include <fcntl.h>
 
 //Cheat sheet :
 //Socket: Create a new communication
@@ -50,27 +50,23 @@ private:
 	std::string _nick;
 	std::string _name;
 	std::string _chan;
-	std::string _port;
 	std::string _pass;
-	
+	std::string	_opass;
+
+	int	_port;
+	int	_sock;
+
+	std::vector<pollfd> _pollfds;
+
 	Server();
 	Server(Server&);
 	Server& operator=(Server&);
 public:
-	Server(char** av);
+	Server(int port, const std::string &pass);
 	Server(std::string port, std::string pass);
 	~Server();
 
-
-};
-
-//EXCEPTION
-class Error: public std::exception{
-private:
-	std::string	_msg;
-public:
-	Error(char* msg): _msg(msg){}
-	const char* what() throw() {return _msg.c_str();}
+	int Start_server();
 };
 
 class Client {
@@ -84,6 +80,16 @@ private:
 
 };
 
+//EXCEPTION
+class Error: public std::exception{
+private:
+	std::string	_msg;
+public:
+	Error(char* msg): _msg(msg){}
+	const char* what() throw() {return _msg.c_str();}
+};
+
+
 void	Signal_handler(const int signal) {
 	(void)signal;
 	g_signal = true;
@@ -93,12 +99,60 @@ void	Signal_handler(const int signal) {
 int	Check_port(char* arg) {
 	char *endptr;
 	long int port = strtol(arg, &endptr, 10);
-	if ()
-	if (port > 65535 || port < 0) throw Error("Error! wrong port.");
+	if (*endptr != '\0') throw Error("Error: Check_port only digits in port allowed.");
+	if (port > 65535 || port < 0) throw Error("Error: Check_port wrong port range.");
 	return port;
 }
 
-Server::Server(int port): _port(port),  {
+Server::~Server(){}
+
+Server::Server(int port, const std::string &pass): _port(port), _pass(pass), _host(std::string("127.0.0.1")), _opass("b_operator") {
+	// CREATING A SOCKET
+	if (_sock = socket(AF_INET, SOCK_STREAM, 0) < 0) throw Error("Error: Server::Server socket creation failed.");
+	int opt;
+	if (setsockopt(_sock, SOL_SOCKET, SO_REUSEADDR, &opt, (socklen_t)opt) < 0) throw Error("Error: Server::Server socket option failed.");
+	if (fcntl(_sock, F_SETFL, O_NONBLOCK) < 0) throw Error("Error: Server::Server error changing socket to non blocking");
+
+	// BIND THE SOCKET TO A IP / PORT AND LISTEN
+	sockaddr_in sockadd;
+	bzero(&sockadd, sizeof(sockadd));
+	sockadd.sin_family = AF_INET;//address family of socket
+	sockadd.sin_addr.s_addr = INADDR_ANY;
+	sockadd.sin_port = htons(_port);//correct byte order on port
+
+	if (bind(_sock, (sockaddr*)&sockadd, sizeof(sockadd)) < 0) throw Error("Error: Server::Server socket bind failed.");
+	if (listen(_sock, SOMAXCONN) < 0) throw Error("Error: Server::Server error while listening.");
+}
+
+int	Server::Start_server(){
+	//SET POLL
+	pollfd fd_server = {_sock, POLLIN, 0};
+	_pollfds.push_back(fd_server);
+	
+	std::cout << "Server IRC Launched!" << std::endl;
+	while (g_interrupt == false)
+	{
+		if (poll(_pollfds.begin().base(), _pollfds.size(), -1) < 0)
+			break ;
+		for (unsigned int i = 0; i < _pollfds.size(); i++)
+		{
+			if (_pollfds[i].revents == 0)
+				continue ;
+			if ((_pollfds[i].revents  & POLLIN ) == POLLIN)
+			{
+				if (_pollfds[i].fd == _sock)
+				{
+					newClient();
+					displayClient();
+					break;
+				}
+			}
+			handleMessage(_pollfds[i].fd);
+		}
+	}
+	for (size_t i = 0; i < _pollfds.size(); i++)
+		close(_pollfds[i].fd);
+
 }
 
 int	main(int ac, char **av) {
@@ -107,46 +161,20 @@ int	main(int ac, char **av) {
 
 	if (ac != 3) { std::cout << "wrong arguments!\n" << "<program> <port>  <password>" << std::endl; return 1;}
 	try {
-		Server srv(Check_port(av[1]), );
+		Server srv(Check_port(av[1]), av[2]);
+		srv.Start_server();
 	}
 	catch (std::exception& err) {
 		std::cerr << err.what() << std::endl;
 		return -1;
 	}
 
-	//listening here is the socket file descriptor
-	//	CREATE A SOCKET
-	int listening = socket(AF_INET, SOCK_STREAM, 0);//creates an endpoint for communication
-	if (listening == -1)
-	{
-		std::cout << "can't create socket" << std::endl;
-		return 1;
-	}
-
-	//	bind the socket to a IP / port
-	sockaddr_in hint;//socket address structure
-	hint.sin_family = AF_INET;//address family of socket
-	hint.sin_port = htons(54000);//correct byte order
-	inet_pton(AF_INET, "0.0.0.0", &hint.sin_addr);//ignore this it's to convert ipv* addresses from text to binary
-
-	//cast socaddr* because it won't see the right one this is how you do it 
-	if (bind(listening, (sockaddr*)&hint, sizeof(hint)) == -1) //bind address
-	{
-		std::cerr << "Can't bind address" << std::endl;
-		return -1;
-	}
-	//	Mark the socket for listening in
-	if (listen(listening, SOMAXCONN) == -1)
-	{
-		std::cerr << "Can't listen" << std::endl;
-		return -3;
-	}
 	///+++ before accepting a call make a pollfd struct for multiplexing  
 	///+++ then use poll() which will wait for one of the file descriptors to become ready to perform I/O
 	///+++ this step is for irc since irc listens to multiple fds through the same port 
 	///+++ the rest of this main is when you create a new client, you found a polld trying to connect(through an event)
 	///+++ so you accept the call and create a new client 
-	//pollfd fd_server = {listening, POLLIN, 0};
+	//pollfd fd_server = {_sock, POLLIN, 0};
 	//std::vector<pollfd> _pollfds;
 	//_pollfds.push_back(fd_server);
 	/////+++this part is in a loop 
@@ -160,7 +188,7 @@ int	main(int ac, char **av) {
 	//			continue ;
 	//		if ((_pollfds[i].revents  & POLLIN ) == POLLIN)
 	//		{
-	//			if (_pollfds[i].fd == listening)
+	//			if (_pollfds[i].fd == _sock)
 	//			{
 	//				//newClient(); CREATE NEW CLIENT THIS IS THE CONTINUATION OF THIS PROGRAM
 	//				//displayClient();
@@ -173,12 +201,13 @@ int	main(int ac, char **av) {
 	//}
 	///+++
 	//	accept a call
+	//NEW CLIENT 
 	sockaddr_in client;
 	socklen_t clientSize = sizeof(client);
 	char host[NI_MAXHOST];//max value of maxlen// host name
 	char service[NI_MAXSERV];//max value for servlen// port the client is on
 
-	int clientSocket = accept(listening, (sockaddr*)&client, &clientSize);//accept connection to socket 
+	int clientSocket = accept(_sock, (sockaddr*)&client, &clientSize);//accept connection to socket 
 	if (clientSocket == -1){
 		std::cerr << "Error with accepting new client" << std::endl;
 		return -4;
