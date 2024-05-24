@@ -1,5 +1,5 @@
 #include <sys/types.h>
-#include <netinet/in.h>
+//#include <netinet/in.h>
 #include <sys/socket.h>
 #include <netdb.h>
 #include <iostream>
@@ -57,11 +57,20 @@ private:
 	Server(Server&);
 	Server& operator=(Server&);
 public:
-
+	Server(char** av);
 	Server(std::string port, std::string pass);
 	~Server();
 
 
+};
+
+//EXCEPTION
+class Error: public std::exception{
+private:
+	std::string	_msg;
+public:
+	Error(char* msg): _msg(msg){}
+	const char* what() throw() {return _msg.c_str();}
 };
 
 class Client {
@@ -75,23 +84,30 @@ private:
 
 };
 
-void	Signal_handler(const int signal){
+void	Signal_handler(const int signal) {
 	(void)signal;
 	g_signal = true;
 	std::cout << "\b\b";
 }
 
-bool	Check_port(char* port){}
+int	Check_port(char* arg) {
+	char *endptr;
+	long int port = strtol(arg, &endptr, 10);
+	if ()
+	if (port > 65535 || port < 0) throw Error("Error! wrong port.");
+	return port;
+}
 
-int	main(int ac, char **av){
+Server::Server(int port): _port(port),  {
+}
+
+int	main(int ac, char **av) {
 	g_signal = false;
 	signal(SIGINT, Signal_handler);
 
-	if (ac != 3) {
-		std::cout << "wrong arguments!\n" << "<program> <port>  <password>" << std::endl; return 1;
-	}
+	if (ac != 3) { std::cout << "wrong arguments!\n" << "<program> <port>  <password>" << std::endl; return 1;}
 	try {
-
+		Server srv(Check_port(av[1]), );
 	}
 	catch (std::exception& err) {
 		std::cerr << err.what() << std::endl;
@@ -99,7 +115,7 @@ int	main(int ac, char **av){
 	}
 
 	//listening here is the socket file descriptor
-	//	create a socket
+	//	CREATE A SOCKET
 	int listening = socket(AF_INET, SOCK_STREAM, 0);//creates an endpoint for communication
 	if (listening == -1)
 	{
@@ -168,7 +184,7 @@ int	main(int ac, char **av){
 		return -4;
 	}
 
-	//	Close the listening socket
+	//	Close the listening socket// in irc multiple connexions go through the same port so you don't close it, this is for example purposes
 	close(listening);//not in irc// close listening port since we don't need it  
 
 	memset(host, 0, NI_MAXHOST);
@@ -232,169 +248,3 @@ int	main(int ac, char **av){
 //break;:
 //Break out of the loop to restart polling after handling the new client connection.
 
-/*
-	Sure, here's a list of the typical responses an IRC server should send to the client for each of these commands. This ensures the client receives the appropriate feedback and information as per the IRC protocol.
-
-### Responses to IRC Commands
-
-1. **PASS**
-   - **Command**: `/pass`
-   - **Description**: Sets a password for connecting to the server.
-   - **Response**: No direct response is typically required if the password is correct. If incorrect, a server error message should be sent.
-     ```irc
-     :server 464 * :Password incorrect
-     ```
-
-2. **NICK**
-   - **Command**: `/nick`
-   - **Description**: Sets or changes the client's nickname.
-   - **Response**: If the nickname is valid and available:
-     ```irc
-     :oldnick!user@host NICK :newnick
-     ```
-     If the nickname is already in use:
-     ```irc
-     :server 433 * newnick :Nickname is already in use
-     ```
-
-3. **OPER**
-   - **Command**: `/oper`
-   - **Description**: Authenticates the user as an IRC operator.
-   - **Response**: If the credentials are correct:
-     ```irc
-     :server 381 user :You are now an IRC operator
-     ```
-     If the credentials are incorrect:
-     ```irc
-     :server 491 user :No O-lines for your host
-     ```
-
-4. **USER**
-   - **Command**: Automatically sent by the client during the connection process.
-   - **Description**: Specifies the username, hostname, and real name of the user.
-   - **Response**: Typically, there is no immediate response to `USER`, but after successful `NICK` and `USER`, the server should send a welcome message:
-     ```irc
-     :server 001 nick :Welcome to the Internet Relay Network nick!user@host
-     :server 002 nick :Your host is server, running version 1.0
-     :server 003 nick :This server was created date
-     :server 004 nick server 1.0 iwso ov
-     ```
-
-5. **PRIVMSG**
-   - **Command**: `/msg`
-   - **Description**: Sends a private message to a user or channel.
-   - **Response**: No direct server response is required for `PRIVMSG`. It is delivered to the target user or channel:
-     ```irc
-     :sender!user@host PRIVMSG target :message
-     ```
-
-6. **JOIN**
-   - **Command**: `/join`
-   - **Description**: Joins a specified channel.
-   - **Response**: If the join is successful:
-     ```irc
-     :nick!user@host JOIN :#channel
-     :server 332 nick #channel :Current channel topic
-     :server 333 nick #channel user time
-     :server 353 nick = #channel :nick1 nick2 nick3
-     :server 366 nick #channel :End of /NAMES list
-     ```
-     If the channel is invite-only or other restrictions apply:
-     ```irc
-     :server 473 nick #channel :Cannot join channel (+i)
-     ```
-
-7. **KILL**
-   - **Command**: `/kill`
-   - **Description**: Disconnects a user from the server.
-   - **Response**: If the kill is successful:
-     ```irc
-     :oper!user@host KILL target :reason
-     ```
-     If not authorized:
-     ```irc
-     :server 481 nick :Permission Denied- You're not an IRC operator
-     ```
-
-8. **PING**
-   - **Command**: Sent automatically by the server/client to check the connection.
-   - **Description**: Tests the presence of an active client or server.
-   - **Response**: The server should respond with a `PONG` message:
-     ```irc
-     :server PONG server :token
-     ```
-
-9. **PART**
-   - **Command**: `/part`
-   - **Description**: Leaves a specified channel.
-   - **Response**: If the part is successful:
-     ```irc
-     :nick!user@host PART #channel :message
-     ```
-
-10. **LIST**
-    - **Command**: `/list`
-    - **Description**: Lists all channels or those matching a pattern.
-    - **Response**: The server should list all channels and their topics:
-      ```irc
-      :server 321 nick Channel :Users  Name
-      :server 322 nick #channel1 5 :Channel 1 topic
-      :server 322 nick #channel2 10 :Channel 2 topic
-      :server 323 nick :End of /LIST
-      ```
-
-11. **NAMES**
-    - **Command**: `/names`
-    - **Description**: Lists all users in a channel.
-    - **Response**: The server should send the list of names in the channel:
-      ```irc
-      :server 353 nick = #channel :nick1 nick2 nick3
-      :server 366 nick #channel :End of /NAMES list
-      ```
-
-12. **TOPIC**
-    - **Command**: `/topic`
-    - **Description**: Sets or gets the topic of a channel.
-    - **Response**: If getting the topic:
-      ```irc
-      :server 332 nick #channel :Current channel topic
-      :server 333 nick #channel user time
-      ```
-      If setting the topic:
-      ```irc
-      :nick!user@host TOPIC #channel :New topic
-      ```
-
-13. **KICK**
-    - **Command**: `/kick`
-    - **Description**: Removes a user from a channel.
-    - **Response**: If the kick is successful:
-      ```irc
-      :nick!user@host KICK #channel target :reason
-      ```
-
-14. **MODE**
-    - **Command**: `/mode`
-    - **Description**: Changes or queries the mode of a channel or user.
-    - **Response**: If querying:
-      ```irc
-      :server 324 nick #channel +nt
-      ```
-      If setting:
-      ```irc
-      :nick!user@host MODE #channel +o nick
-      ```
-
-15. **NOTICE**
-    - **Command**: `/notice`
-    - **Description**: Sends a notice to a user or channel.
-    - **Response**: No direct server response is required. It is delivered to the target user or channel:
-      ```irc
-      :sender!user@host NOTICE target :message
-      ```
-
-### Summary
-
-The responses provided above align with the standard IRC protocol. Proper implementation of these responses ensures that your server communicates correctly with IRC clients like Irssi, providing the expected feedback and maintaining compatibility with the IRC network.
-
-*/
