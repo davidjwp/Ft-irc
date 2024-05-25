@@ -15,6 +15,7 @@
 #include <vector>
 #include <exception>
 #include <fcntl.h>
+#include <string.h>
 
 bool	stop_server;
 
@@ -24,6 +25,7 @@ enum Credentials{
 	USER = 4,
 };
 
+#define BUFFER_SIZE 256
 //ESCAPE CODES
 #define Bblue "\033[1;34m"
 #define Bred "\033[1;31m"
@@ -32,6 +34,53 @@ enum Credentials{
 #define Byellow "\033[1;33m"
 #define rescol "\033[0m"
 #define colstring(col, msg)(col + msg + rescol)
+
+class Channel {
+private:
+
+	std::string	_name;
+	std::vector<std::string>	_clients;
+public:
+
+};
+
+class Client {
+private:
+
+	std::string	_hostname;
+	std::string	_nickname;
+	std::string	_username;
+	std::string	_realname;
+	std::string	_channel;
+
+	int	_clfd;
+	int _state;
+	std::string _msg;
+
+public:
+	Client(int clientfd, const std::string hostname);
+	~Client();
+
+	//getters
+	std::string Get_host();
+	std::string Get_nick();
+	std::string Get_chan();
+	std::string Get_user();
+	std::string	Get_msg();
+	std::string	Get_realname();
+	int	Get_state();
+	int Get_clfd();
+
+	//setters
+	void	Set_host();
+	void	Set_nick();
+	void	Set_chan();
+	void	Set_user();
+	void	Set_msg();
+	void	Set_realname();
+	void	Set_state();
+
+};
 
 class Server {
 private:
@@ -46,9 +95,6 @@ private:
 	std::vector<Client> _clients;
 	std::vector<Channel> _channels;
 
-	Server();
-	Server(Server&);
-	Server& operator=(Server&);
 public:
 	~Server();
 	Server(int port, const std::string &pass);
@@ -56,7 +102,9 @@ public:
 	int 	Start_server();
 	void	Add_client();
 	void	Client_Status();
-
+	void	Client_messages(int);
+	std::string Get_message(int fd);
+	Client	getClient(int fd);
 
 	//getters
 
@@ -65,45 +113,7 @@ public:
 	std::string Get_opass();
 };
 
-class Client {
-private:
-
-	std::string	_hostname;
-	std::string	_nickname;
-	std::string	_username;
-	std::string	_realname;
-	std::string	_channel;
-
-	int	_clfd;
-	int _state;
-
-	Client();
-	Client(Client&);
-	Client& operator=(Client&);
-public:
-	Client(int clientfd, const std::string hostname);
-	~Client();
-
-	std::string Get_host();
-	std::string Get_nick();
-	std::string Get_chan();
-	std::string Get_user();
-	std::string	Get_realname();
-	int	Get_state();
-	int Get_clfd();
 
 
-};
-
-class Channel {
-private:
-
-	std::string	_name;
-	std::vector<std::string>	_clients;
-public:
-
-
-
-};
 
 #endif

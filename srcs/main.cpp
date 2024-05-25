@@ -4,32 +4,39 @@
 class Error: public std::exception{
 private:
 	std::string	_msg;
+
 public:
-	Error(char* msg): _msg(msg){}
-	const char* what() throw() {return _msg.c_str();}
+	virtual ~Error() throw (){};
+	Error(const char* msg): _msg(std::string(msg)){};
+	const char* what() const throw(){ return _msg.c_str();}
 };
 
+//CLIENT IMPLEMENTATION#########################################################################################################
+
+Client::Client(int clientfd, const std::string hostname): _hostname(hostname), _clfd(clientfd), _state(0){}
+
+Client::~Client(){}
+
+//GETTERS
+
+std::string Client::Get_host(){ return _hostname;}
+std::string Client::Get_nick(){ return _nickname;}
+std::string Client::Get_chan(){ return _channel;}
+std::string Client::Get_user(){ return _username;}
+std::string	Client::Get_msg(){ return _msg;}
+std::string Client::Get_realname(){ return _realname;}
+int	Client::Get_state(){ return _state;}
+int	Client::Get_clfd(){ return _clfd;}
+
 //SERVER IMPLEMENTATIONS#########################################################################################################
-Server::Server(){}
-
-Server::Server(Server& cpy): _host(cpy.Get_host()), _pass(cpy.Get_pass()), _opass(cpy.Get_opass()){}
-
-Server& Server::operator=(Server& se){
-	_host = se.Get_host();
-	_pass = se.Get_pass();
-	_opass = se.Get_opass();
-	
-	return *this;
-}
-
 Server::~Server(){}
 
-Server::Server(int port, const std::string &pass): _port(port), _pass(pass), _host(std::string("127.0.0.1")), _opass("b_operator") {
+Server::Server(int port, const std::string &pass): _host(std::string("127.0.0.1")), _pass(pass), _opass("b_operator"), _port(port) {
 	// CREATING A SOCKET
-	if (_sock = socket(AF_INET, SOCK_STREAM, 0) < 0) throw Error("Error: Server::Server socket creation failed.");
+	if ((_sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) throw Error("Error: Server::Server socket creation failed.");
 	
-	int opt;
-	if (setsockopt(_sock, SOL_SOCKET, SO_REUSEADDR, &opt, (socklen_t)opt) < 0) throw Error("Error: Server::Server socket option failed.");
+	int opt = 1;
+	if (setsockopt(_sock, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) throw Error("Error: Server::Server socket option failed.");
 	
 	if (fcntl(_sock, F_SETFL, O_NONBLOCK) < 0) throw Error("Error: Server::Server error changing socket to non blocking");
 
@@ -62,12 +69,12 @@ int	Server::Start_server(){
 					break;
 				}
 			}
-			//handleMessage(_pollfds[i].fd);
+			Client_messages(_pollfds[i].fd);
 		}
 	}
 	for (size_t i = 0; i < _pollfds.size(); i++)
 		close(_pollfds[i].fd);
-
+	return 0;
 }
 
 void	Server::Add_client(){
@@ -77,11 +84,11 @@ void	Server::Add_client(){
 	socklen_t clientSize = sizeof(client);
 	char hostname[NI_MAXHOST];
 
-	if (clientsocket = accept(_sock, (sockaddr*)&client, &clientSize) < 0) throw Error("Error: Server::Add_client accept failed.");
+	if ((clientsocket = accept(_sock, (sockaddr*)&client, &clientSize)) < 0) throw Error("Error: Server::Add_client accept failed.");
 	
 	if (getnameinfo((sockaddr*)&client, sizeof(client), hostname, NI_MAXHOST, NULL, NI_MAXSERV, 0)) throw Error("Error: Server::Add_client getnameinfo failed.");
 	
-	_clients.push_back(Client(clientsocket, std::string(hostname)));
+	_clients.push_back(Client(clientsocket, hostname));
 	pollfd clpfd = {clientsocket, POLLIN, 0};
 	_pollfds.push_back(clpfd);
 
@@ -89,21 +96,93 @@ void	Server::Add_client(){
 }
 
 void	Server::Client_Status() {
-	std::cout << "Connected clients:" << std::endl;
+	std::cout << colstring(Bcyan, std::string("Connected clients: ")) << _clients.size() << std::endl;
 
 	for (size_t i = 0; i < _clients.size(); i++) {
 		int state = _clients[i].Get_state();
-		std::cout << i << ".\tregistered: [";
+		std::cout << (i + 1) << ".\tregistered: [";
 		if (state & NICK && state & USER && state & PASS)
 			std::cout << colstring(Bgreen, std::string("yes"));
 		else
-			std::cout << colstring(Byellow, std::string("no"));
+			std::cout << colstring(Bred, std::string("no"));
 		std::cout << 
 		"]\tuser:" << colstring(Bblue, _clients[i].Get_user()) <<
 		"\tnickname:" << colstring(Bblue, _clients[i].Get_nick()) <<
-		"\trealname:" << colstring(Bblue, _clients[i].Get_realname()) <<
+		"\treal name:" << colstring(Bblue, _clients[i].Get_realname()) <<
 		std::endl;
 	}
+}
+
+//int	gnl(char **line)
+//{
+	//char	*buf;
+	//int		n;
+	//char	c;
+	//int		i;
+//
+	//i = 0;
+	//write (1, "heredoc> ", 9);
+	//buf = malloc(sizeof(char) * BUFSIZ);
+	//n = read(STDIN_FILENO, &c, 1);
+	//while (n && c != '\n' && c != '\0')
+	//{
+		//if (c != 'n' && c != '\0')
+			//buf[i] = c;
+		//n = read(STDIN_FILENO, &c, 1);
+		//i++;
+	//}
+	//buf[i] = '\n';
+	//buf[++i] = 0;
+	//*line = buf;
+	//return (n);
+//}
+
+
+std::string	Server::Get_message(int clfd) {
+	std::string	msg;
+	char	buf[BUFFER_SIZE];
+	bzero(buf, BUFFER_SIZE);
+
+	while (!std::memchr(buf, '\n', BUFFER_SIZE)){
+		bzero(buf,BUFFER_SIZE);
+		if (recv(clfd, buf, BUFFER_SIZE, MSG_DONTWAIT) < 0){
+			if )
+		}
+	}
+
+	return msg;
+}
+
+//std::string	Server::Get_message(int clfd) {
+//	std::string	msg;
+//	char	buf[256];
+//	bzero(buf, 256);
+
+//	while (msg.find('\n') == std::string::npos){
+//		bzero(buf,256);
+//		if (recv(clfd, buf, 256, MSG_DONTWAIT))
+//	}
+
+//	return msg;
+//}
+
+void	Server::Client_messages(int current_clfd) {
+	try{
+		std::string message = Get_message(current_clfd);
+		std::vector<std::string> messages;
+	}
+	catch (std::exception& err){
+		std::cerr << err.what() << std::endl;
+	}
+}
+
+Client Server::getClient(int fd){
+	for (size_t i = 0; i < _clients.size(); i++) {
+		if (_clients[i].Get_clfd() == fd) return _clients[i];
+		i++;
+	}
+	throw Error("Error: Server::getClient can't find client.");
+	return *_clients.data();
 }
 
 //GETTERS
@@ -112,36 +191,6 @@ std::string Server::Get_host(){ return _host;}
 std::string Server::Get_pass(){ return _pass;}
 std::string Server::Get_opass(){ return _opass;}
 
-
-//CLIENT IMPLEMENTATION#########################################################################################################
-
-Client::Client(){}
-
-Client::Client(Client& cpy): _hostname(cpy.Get_host()), _nickname(cpy.Get_nick()), _channel(cpy.Get_chan()), _username(cpy.Get_user()){}
-
-Client& Client::operator=(Client& cl){
-	_hostname = cl.Get_host();
-	_nickname = cl.Get_nick();
-	_channel = cl.Get_chan();
-	_username = cl.Get_user();
-	_clfd = cl.Get_clfd();
-
-	return *this;
-}
-
-Client::Client(int clientfd, std::string hostname): _clfd(clientfd), _hostname(hostname){}
-
-Client::~Client(){}
-
-//GETTERS
-
-std::string Client::Get_host(){ return _hostname;}
-std::string Client::Get_nick(){ return _nickname;}
-std::string Client::Get_chan(){ return _channel;}
-std::string Client::Get_user(){ return _username;}
-std::string Client::Get_realname(){ return _realname;}
-int	Client::Get_state(){ return _state;}
-int	Client::Get_clfd(){ return _clfd;}
 
 //MAIN##########################################################################################################################
 
@@ -174,6 +223,9 @@ int	main(int ac, char **av) {
 		return -1;
 	}
 
+	return 0;
+}
+
 	//	while receiving- display message, echo message// this is for the purpose of connection not irc
 	//char buf[4096];
 	//while (true)
@@ -199,5 +251,3 @@ int	main(int ac, char **av) {
 	//}
 	////	Close socket
 	//close(clientSocket);
-	return 0;
-}

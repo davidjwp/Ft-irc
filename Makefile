@@ -1,12 +1,12 @@
 NAME	= ircserv
 
-CC		= c++
+CC	= c++
 
 CFLAGS	= -g -std=c++98 -Wextra -Werror -Wall 
 
-HEADERS	= Server.hpp
+HEADERS	= srcs/irc.hpp
 
-SRCS	= main.cpp
+SRCS	= srcs/main.cpp
 
 OBJS	= $(SRCS:.cpp=.o)
 

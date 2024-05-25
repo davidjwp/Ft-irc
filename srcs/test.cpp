@@ -38,7 +38,13 @@ std::vector<pollfd> ok;
 int	main(int ac, char** av){
 	std::string msg("my message");
 
+	std::string	test("");
 	int	state = ONE + TWO + THREE;
+
+	while (test.find("\n") == std::string::npos)
+	{
+		std::cout << "ok" << std::endl;
+	}
 
 	if (state & ONE && state & TWO && state & THREE)
 		std::cout << colstring(Bgreen, std::string("GOOD")) << std::endl;
