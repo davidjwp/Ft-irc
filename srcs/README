@@ -186,3 +186,34 @@ irssi
 ### Summary
 
 The responses provided above align with the standard IRC protocol. Proper implementation of these responses ensures that your server communicates correctly with IRC clients like Irssi, providing the expected feedback and maintaining compatibility with the IRC network.
+
+
+
+
+//Cheat sheet :
+//Socket: Create a new communication
+//Bind: Attach a local address to a socket
+//Listen: Announce willingness to accept connections
+//Accept: Block caller until a connection request arrives
+//Connect: Actively attempt to establish a connection
+//Send: Send some data over a connection
+//Receive: Receive some data over a connection
+//Close: Release the connection
+
+//	steps of IRC server 
+//	
+//1.	create a socket
+//	
+//2.	bind the socket to an IP address and protected
+//	
+//3.	mark the socket for listening 
+//	
+//4.	accept incoming connections
+//	
+//5.	handle multiple client connections
+//	
+//6.	receive and process LC_MESSAGES
+//	
+//7.	close client socket
+//	
+//8.	close the listening port

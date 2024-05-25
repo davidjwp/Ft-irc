@@ -6,7 +6,7 @@
 /*   By: djacobs <djacobs@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/01 12:37:14 by prossi            #+#    #+#             */
-/*   Updated: 2024/05/25 00:57:37 by djacobs          ###   ########.fr       */
+/*   Updated: 2024/05/25 15:34:16 by djacobs          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -437,17 +437,18 @@ void    Client::reply(String msg)
 
 void    Client::welcome() 
 {
-    //debug
-	//std::cout << "LOGIN=" << _state << " NICK=" << _nickname << " USER=" << _username << std::endl;
-
-	//
 	if (_state != LOGIN || _nickname.empty() || _username.empty())
     {
         std::cout << "Waiting registration... " << _nickname << std::endl;
         return ;
     }
     _state = REGISTERED;
-    reply("001 " + _nickname + " :Welcome " +_nickname +  " into our irc network");
+	//debug
+	std::cout << "001 " + _nickname + " :Welcome " +_nickname +  " into our irc network" << std::endl;
+    
+	//"<client> :Welcome to the <networkname> Network, <nick>[!<user>@<host>]"
+	//
+	reply("001 " + _nickname + " :Welcome " +_nickname +  " into our irc network");//change that to modern irc protocol too
     std::cout << _nickname << " is registered" << std::endl;
 }
 
