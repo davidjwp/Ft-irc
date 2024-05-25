@@ -130,7 +130,7 @@ int	Server::Start_server(){
 	_pollfds.push_back(fd_server);
 	
 	std::cout << "Server IRC Launched!" << std::endl;
-	while (g_interrupt == false)
+	while (!g_signal)
 	{
 		if (poll(_pollfds.begin().base(), _pollfds.size(), -1) < 0)
 			break ;
@@ -142,12 +142,12 @@ int	Server::Start_server(){
 			{
 				if (_pollfds[i].fd == _sock)
 				{
-					newClient();
-					displayClient();
+					//newClient();
+					//displayClient();
 					break;
 				}
 			}
-			handleMessage(_pollfds[i].fd);
+			//handleMessage(_pollfds[i].fd);
 		}
 	}
 	for (size_t i = 0; i < _pollfds.size(); i++)
@@ -214,7 +214,7 @@ int	main(int ac, char **av) {
 	}
 
 	//	Close the listening socket// in irc multiple connexions go through the same port so you don't close it, this is for example purposes
-	close(listening);//not in irc// close listening port since we don't need it  
+	//close(listening);//not in irc// close listening port since we don't need it  
 
 	memset(host, 0, NI_MAXHOST);
 	memset(service, 0 , NI_MAXSERV);
