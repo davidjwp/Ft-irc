@@ -15,7 +15,9 @@
 #include <vector>
 #include <exception>
 #include <fcntl.h>
-#include <string.h>
+#include <string>
+#include <sstream>
+#include <errno.h>
 
 bool	stop_server;
 
@@ -28,6 +30,7 @@ enum Credentials{
 #define BUFFER_SIZE 256
 //ESCAPE CODES
 #define Bblue "\033[1;34m"
+#define BBred "\033[41m"
 #define Bred "\033[1;31m"
 #define Bgreen "\033[1;32m"
 #define Bcyan "\033[1;36m"
@@ -72,13 +75,14 @@ public:
 	int Get_clfd();
 
 	//setters
-	void	Set_host();
-	void	Set_nick();
-	void	Set_chan();
-	void	Set_user();
-	void	Set_msg();
-	void	Set_realname();
-	void	Set_state();
+	void	Set_host(std::string);
+	void	Set_nick(std::string);
+	void	Set_chan(std::string);
+	void	Set_user(std::string);
+	void	Set_msg(std::string);
+	void	Set_realname(std::string);
+	void	Set_state(int);
+	void	addMsg(std::string);
 
 };
 
@@ -104,7 +108,8 @@ public:
 	void	Client_Status();
 	void	Client_messages(int);
 	std::string Get_message(int fd);
-	Client	getClient(int fd);
+	std::vector<Client>::iterator	getClient(int fd);
+	std::vector<std::string> split(std::string);
 
 	//getters
 

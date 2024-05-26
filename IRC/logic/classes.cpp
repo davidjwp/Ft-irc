@@ -6,7 +6,7 @@
 /*   By: djacobs <djacobs@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/01 12:37:14 by prossi            #+#    #+#             */
-/*   Updated: 2024/05/25 15:34:16 by djacobs          ###   ########.fr       */
+/*   Updated: 2024/05/26 01:02:31 by djacobs          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -254,6 +254,7 @@ void	Server::launch()
 					break;
 				}
 			}
+			//std::cout << "client 1: " << _clients[0].getFd() << " client 2: "<< _clients[1].getFd() << std::endl;
 			handleMessage(_pollfds[i].fd);
 		}
 	}
@@ -283,6 +284,7 @@ Client		&Server::findClient(String nick)
 
 std::vector<Client>::iterator	Server::findClientIt(int fd)
 {
+	std::cout << "FD: " << fd << std::endl;
 	std::vector<Client>::iterator ret = _clients.begin();
 	std::vector<Client>::iterator end = _clients.end();
 	while (ret != end)
