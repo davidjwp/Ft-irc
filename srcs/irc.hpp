@@ -64,6 +64,8 @@ public:
 	Client(int clientfd, const std::string hostname);
 	~Client();
 
+
+
 	//getters
 	std::string Get_host();
 	std::string Get_nick();
@@ -105,17 +107,39 @@ public:
 
 	int 	Start_server();
 	void	Add_client();
-	void	Client_Status();
+	void	Clients_Status();
 	void	Client_messages(int);
 	std::string Get_message(int fd);
+	void	Proc_message(std::string, int);
 	std::vector<Client>::iterator	getClient(int fd);
+	std::vector<pollfd>::iterator	getPollfd(int fd);
 	std::vector<std::string> split(std::string);
+	void	Disconnect_client(int);
+
 
 	//getters
 
 	std::string Get_host();
 	std::string Get_pass();
 	std::string Get_opass();
+
+	void	cNICK(std::vector<std::string>, int);
+	void	cUSER(std::vector<std::string>, int);
+	void	cPASS(std::vector<std::string>, int);
+	void	cPRIVMSG(std::vector<std::string>, int);
+	void	cJOIN(std::vector<std::string>, int);
+	void	cWHO(std::vector<std::string>, int);
+	void	cPING(std::vector<std::string>, int);
+	void	cOPER(std::vector<std::string>, int);
+	void	cPART(std::vector<std::string>, int);
+	void	cNAMES(std::vector<std::string>, int);
+	void	cMODE(std::vector<std::string>, int);
+	void	cKICK(std::vector<std::string>, int);
+	void	cINVITE(std::vector<std::string>, int);
+	void	cNOTICE(std::vector<std::string>, int);
+	void	cTOPIC(std::vector<std::string>, int);
+	void	cKILL(std::vector<std::string>, int);
+	void	cLIST(std::vector<std::string>, int);
 };
 
 

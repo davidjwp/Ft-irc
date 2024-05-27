@@ -83,6 +83,7 @@ int	Server::Start_server(){
 				}
 			}
 			Client_messages(_pollfds[i].fd);
+			Clients_Status();
 		}
 	}
 	for (size_t i = 0; i < _pollfds.size(); i++)
@@ -105,10 +106,10 @@ void	Server::Add_client(){
 	pollfd clpfd = {clientsocket, POLLIN, 0};
 	_pollfds.push_back(clpfd);
 
-	Client_Status();
+	Clients_Status();
 }
 
-void	Server::Client_Status() {
+void	Server::Clients_Status() {
 	std::cout << colstring(Bcyan, std::string("Connected clients: ")) << _clients.size() << std::endl;
 
 	for (size_t i = 0; i < _clients.size(); i++) {
@@ -140,7 +141,7 @@ std::string	Server::Get_message(int clfd) {
 			if (errno != EWOULDBLOCK) throw Error("Error: Server::Get_message recv blocking error.");
 			return "";
 		} else if (n == 0) {
-			throw Error("Error: Server::Get_message client disconnect.");
+			throw Error("");
 		}
 		client->addMsg(std::string(buf, n));
 		msg.append(buf, n);
@@ -151,29 +152,9 @@ std::string	Server::Get_message(int clfd) {
 	return msg;
 }
 
-//std::string	Server::Get_message(int clfd) {
-//	std::string	msg;
-//	char	buf[BUFFER_SIZE];
-//	bzero(buf, BUFFER_SIZE);
-//	std::vector<Client>::iterator client = getClient(clfd);
-//	msg = client->Get_msg();
 
-//	while (!std::memchr(buf, '\n', BUFFER_SIZE)){
-//		bzero(buf,BUFFER_SIZE);
-//		int n = 0;
-//		if ((n = recv(clfd, buf, BUFFER_SIZE, MSG_DONTWAIT)) < 0){
-//			if (errno != EWOULDBLOCK) throw Error("Error: Server::Get_message recv blocking error.");
-//			return "";
-//		}
-//		else if (n == 0) throw Error("Error: Server::Get_message client disconnect.");
-//		client->addMsg(buf);
-//		msg += buf;
-//	}
-//	client->Set_msg("");
-//	return msg;
-//}
 
-std::vector<std::string> Server::split(std::string msg){
+std::vector<std::string> Server::split(std::string msg) {
 	std::vector<std::string> cmd;
 	std::stringstream str(msg);
 	std::string tmp;
@@ -188,18 +169,77 @@ std::vector<std::string> Server::split(std::string msg){
 	return cmd;
 }
 
+void	Server::Disconnect_client(int clfd) {
+	std::vector<Client>::iterator cl = getClient(clfd);
+	std::vector<pollfd>::iterator pfd = getPollfd(clfd);
+
+	std::cout << colstring(Bcyan, std::string("User: ")) << 
+	colstring(Bblue, cl->Get_user()) << 
+	colstring(Bcyan, std::string("Successfully Disconnected !")) << std::endl;
+	close(cl->Get_clfd());
+	_pollfds.erase(pfd);
+	_clients.erase(cl);
+}
+
 void	Server::Client_messages(int current_clfd) {
-	try{ std::vector<std::string> message = split(Get_message(current_clfd)); }
+	std::vector<std::string> messages;
+
+	try{ messages = split(Get_message(current_clfd)); }
+	
 	catch (std::exception& err){
+		Disconnect_client(current_clfd);
 		std::cerr << err.what() << std::endl;
+		return ;
+	}
+	for (size_t i = 0; i < messages.size(); i++)
+		Proc_message(messages[i], current_clfd);
+}
+
+//Channel specific commands 
+
+//JOIN, OPER, KICK
+void	Server::Proc_message(std::string message, int clfd) {
+
+	std::vector<std::string> msg_split;
+	std::vector<Client>::iterator cl = getClient(clfd);
+
+	if (message[0] == ' ' || message[0] == '\t') return ;
+		
+	while (message.find('\t') != std::string::npos)
+		message[message.find('\t')] = 32;
+
+	std::string 	tmp;
+	std::stringstream stream(message);
+	while (getline(stream, tmp, ' '))
+		if (tmp.size()) msg_split.push_back("");
+	
+	std::string  COMS[] = {	"NICK", "USER", "PASS", "PRIVMSG", \
+							"JOIN", "WHO", "PING", "OPER", \
+							"PART", "NAMES", "MODE", "KICK",\
+							"INVITE", "NOTICE", "TOPIC", "LIST", "KILL"};
+	
+	void	(Server::*commands[])(std::vector<std::string> msg_split, int clfd) = {
+		&Server::cNICK, &Server::cUSER, &Server::cPASS, &Server::cPRIVMSG, 
+		&Server::cJOIN, &Server::cWHO, &Server::cPING, &Server::cOPER, 
+		&Server::cPART, &Server::cNAMES, &Server::cMODE, &Server::cKICK, 
+		&Server::cINVITE, &Server::cNOTICE, &Server::cTOPIC, &Server::cLIST, &Server::cKILL};
+
+	for (int i = 0; i < 16; i++){
+		if (!tmp.compare(COMS[i]))
+			(this->*commands[i])(msg_split, clfd);
 	}
 }
 
+std::vector<pollfd>::iterator Server::getPollfd(int fd){
+	for (std::vector<pollfd>::iterator it = _pollfds.begin(); it != _pollfds.end(); it++)
+		if (it->fd == fd) return it;
+	throw Error("Error: Server::getPollfd can't find pollfd.");
+	return _pollfds.begin();
+}
+
 std::vector<Client>::iterator Server::getClient(int fd){
-	for (std::vector<Client>::iterator it = _clients.begin(); it != _clients.end(); it++){
+	for (std::vector<Client>::iterator it = _clients.begin(); it != _clients.end(); it++)
 		if (it->Get_clfd() == fd) return it;
-		std::cout << "client fd:" << fd << " it->Get_clfd():" << it->Get_clfd() << std::endl;
-	}
 	throw Error("Error: Server::getClient can't find client.");
 	return _clients.begin();
 }
@@ -243,3 +283,27 @@ int	main(int ac, char **av) {
 
 	return 0;
 }
+
+//std::string	Server::Get_message(int clfd) {
+//	std::string	msg;
+//	char	buf[BUFFER_SIZE];
+//	bzero(buf, BUFFER_SIZE);
+//	std::vector<Client>::iterator client = getClient(clfd);
+//	msg = client->Get_msg();
+
+//	while (!std::memchr(buf, '\n', BUFFER_SIZE)){
+//		bzero(buf,BUFFER_SIZE);
+//		int n = 0;
+//		if ((n = recv(clfd, buf, BUFFER_SIZE, MSG_DONTWAIT)) < 0){
+//			if (errno != EWOULDBLOCK) throw Error("Error: Server::Get_message recv blocking error.");
+//			return "";
+//		}
+//		else if (n == 0) throw Error("Error: Server::Get_message client disconnect.");
+//		client->addMsg(buf);
+//		msg += buf;
+//	}
+//	client->Set_msg("");
+//	return msg;
+//}
+
+//watch out for channel names, nicknames, username and all changes to clients in the PROTOCOL

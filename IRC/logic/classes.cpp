@@ -6,7 +6,7 @@
 /*   By: djacobs <djacobs@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/01 12:37:14 by prossi            #+#    #+#             */
-/*   Updated: 2024/05/26 01:02:31 by djacobs          ###   ########.fr       */
+/*   Updated: 2024/05/26 15:53:10 by djacobs          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -165,6 +165,7 @@ void	Server::handleMessage(int fd)
 	catch(const std::exception& e)
 	{
 		clientDisconnect(fd);
+		std::cout << "HERE DISCONNECT" << std::endl;
 		std::cerr << e.what() << '\n';
 		return ;
 	}

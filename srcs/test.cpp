@@ -1,7 +1,8 @@
 #include <poll.h>
 #include <iostream>
 #include <vector>
-
+#include <sstream>
+#include <cstring>
 
 #define Bblue "\033[1;34m"
 #define Bred "\033[1;31m"
@@ -10,6 +11,8 @@
 #define Byellow "\033[1;33m"
 #define rescol "\033[0m"
 #define colstring(col, msg)(col + msg + rescol)
+
+typedef std::string String;
 
 enum stat{
 	ONE = 1,
@@ -36,18 +39,27 @@ std::vector<pollfd> ok;
 
 
 int	main(int ac, char** av){
-	std::string msg("my message");
+	String msg("  my	message   ");
+	std::vector<String> messages;
 
-	std::string	test("");
+
+	while (msg.find('\t') != std::string::npos)
+		msg[msg.find('\t')] = 32;
+
+	std::stringstream str(msg);
+	String tmp(msg);
+	
+	while (getline(str ,tmp, ' '))
+		if (tmp.size()) messages.push_back(tmp);
+	
+	for (std::vector<String>::iterator it = messages.begin(); it != messages.end(); it++)
+		std::cout << "$" << *it << "$" << std::endl;
+
+	String	test("");
 	int	state = ONE + TWO + THREE;
 
-	while (test.find("\n") == std::string::npos)
-	{
-		std::cout << "ok" << std::endl;
-	}
-
 	if (state & ONE && state & TWO && state & THREE)
-		std::cout << colstring(Bgreen, std::string("GOOD")) << std::endl;
+		std::cout << colstring(Bgreen, String("GOOD")) << std::endl;
 
 	std::cout << colstring(Bblue, msg) << " and the rest" << std::endl;
 	std::cout << colstring(Bgreen, msg) << " and the rest" << std::endl;
