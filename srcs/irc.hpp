@@ -1,3 +1,4 @@
+#pragma once
 #ifndef IRC_HPP
 # define IRC_HPP
 
@@ -19,12 +20,13 @@
 #include <sstream>
 #include <errno.h>
 
-bool	stop_server;
+extern bool	stop_server;
 
 enum Credentials{
 	PASS = 1,
 	NICK = 2,
 	USER = 4,
+	REG  = 8,
 };
 
 #define BUFFER_SIZE 256
@@ -86,6 +88,7 @@ public:
 	void	Set_state(int);
 	void	addMsg(std::string);
 
+	void	isRegistered();
 };
 
 class Server {
@@ -140,9 +143,8 @@ public:
 	void	cTOPIC(std::vector<std::string>, int);
 	void	cKILL(std::vector<std::string>, int);
 	void	cLIST(std::vector<std::string>, int);
+
+	static void	reply(Client, std::string);
 };
-
-
-
 
 #endif

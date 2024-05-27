@@ -1,5 +1,7 @@
 #include "irc.hpp"
 
+bool stop_server = false;
+
 //EXCEPTION
 class Error: public std::exception{
 private:
@@ -31,14 +33,31 @@ int	Client::Get_clfd(){ return _clfd;}
 //SETTERS
 
 void Client::Set_host(std::string host){ _hostname = host;}
-void Client::Set_nick(std::string nick){ _nickname = nick;}
+void Client::Set_nick(std::string nick){ if (!(_state & NICK)) _state += NICK; _nickname = nick;}
 void Client::Set_chan(std::string chan){ _channel = chan;}
-void Client::Set_user(std::string user){ _username = user;}
+void Client::Set_user(std::string user){ if (!(_state & USER)) _state += USER; _username = user;}
 void Client::Set_msg(std::string msg){ _msg = msg;}
-void Client::Set_realname(std::string realn){ _realname = realn;}
+void Client::Set_realname(std::string realn){ if (!(_state & NICK)) _state += NICK; _realname = realn;}
 void Client::Set_state(int state){ _state += state;}
 void Client::addMsg(std::string msg){ _msg += msg;}
 
+void Client::isRegistered() {
+	if (_state & NICK && _state & USER && _state & PASS) {
+		if (!(_state & REG)) {
+			_state += REG;
+			std::cout << "User: " << colstring(Bblue, _username) << colstring(Bgreen, std::string(" Registered")) << std::endl;
+			Server::reply(*this, );
+		}
+	}
+	std::cout << "Registering ... \n" << colstring(Bred, std::string("Missing "));
+	if (!(_state & NICK))
+		std::cout << "Nickname ";
+	if (!(_state & USER))
+		std::cout << "Username ";
+	if (!(_state & PASS))
+		std::cout << "Password ";
+	std::cout << std::endl;
+}
 
 //SERVER IMPLEMENTATIONS#########################################################################################################
 Server::~Server(){}
@@ -75,7 +94,7 @@ int	Server::Start_server(){
 		if (poll(_pollfds.data(), _pollfds.size(), -1) < 0)
 			break ;
 		for (size_t i = 0; i < _pollfds.size(); i++) {
-			if (!_pollfds[i].revents) continue;//skips the first one since it's n
+			if (!_pollfds[i].revents) continue;
 			if ((_pollfds[i].revents  & POLLIN ) == POLLIN) {
 				if (_pollfds[i].fd == _sock) {
 					Add_client();
@@ -196,12 +215,10 @@ void	Server::Client_messages(int current_clfd) {
 }
 
 //Channel specific commands 
-
-//JOIN, OPER, KICK
+//JOIN, OPER, KICK, MODE, TOPIC
 void	Server::Proc_message(std::string message, int clfd) {
 
 	std::vector<std::string> msg_split;
-	std::vector<Client>::iterator cl = getClient(clfd);
 
 	if (message[0] == ' ' || message[0] == '\t') return ;
 		
@@ -211,21 +228,18 @@ void	Server::Proc_message(std::string message, int clfd) {
 	std::string 	tmp;
 	std::stringstream stream(message);
 	while (getline(stream, tmp, ' '))
-		if (tmp.size()) msg_split.push_back("");
-	
-	std::string  COMS[] = {	"NICK", "USER", "PASS", "PRIVMSG", \
-							"JOIN", "WHO", "PING", "OPER", \
-							"PART", "NAMES", "MODE", "KICK",\
-							"INVITE", "NOTICE", "TOPIC", "LIST", "KILL"};
+		if (tmp.size()) msg_split.push_back(tmp);
+
+	std::string  ccoms[] = {"NICK", "USER", "PASS", "PRIVMSG", "JOIN", "OPER", \
+							"PART", "NAMES", "MODE", "KICK", "INVITE", "TOPIC"};
 	
 	void	(Server::*commands[])(std::vector<std::string> msg_split, int clfd) = {
-		&Server::cNICK, &Server::cUSER, &Server::cPASS, &Server::cPRIVMSG, 
-		&Server::cJOIN, &Server::cWHO, &Server::cPING, &Server::cOPER, 
-		&Server::cPART, &Server::cNAMES, &Server::cMODE, &Server::cKICK, 
-		&Server::cINVITE, &Server::cNOTICE, &Server::cTOPIC, &Server::cLIST, &Server::cKILL};
+		&Server::cNICK/*, &Server::cUSER, &Server::cPASS, &Server::cPRIVMSG, 
+		&Server::cJOIN, &Server::cOPER, &Server::cPART, &Server::cNAMES, &Server::cMODE, &Server::cKICK, 
+		&Server::cINVITE, &Server::cTOPIC*/};
 
-	for (int i = 0; i < 16; i++){
-		if (!tmp.compare(COMS[i]))
+	for (int i = 0; i < 17; i++){
+		if (!msg_split[0].compare(ccoms[i]))
 			(this->*commands[i])(msg_split, clfd);
 	}
 }
@@ -255,7 +269,7 @@ std::string Server::Get_opass(){ return _opass;}
 void	Signal_handler(const int signal) {
 	(void)signal;
 	stop_server = true;
-	//std::cout << "\b\b";
+	std::cout << "\b\b";//clean tty exit
 }
 
 int	Check_port(char* arg) {
@@ -268,7 +282,6 @@ int	Check_port(char* arg) {
 }
 
 int	main(int ac, char **av) {
-	stop_server = false;
 	signal(SIGINT, Signal_handler);
 
 	if (ac != 3) { std::cout << colstring(BBred, std::string("wrong arguments!")) << "\n<program> <port>  <password>" << std::endl; return 1;}
