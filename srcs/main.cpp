@@ -2,17 +2,6 @@
 
 bool stop_server = false;
 
-//EXCEPTION
-class Error: public std::exception{
-private:
-	std::string	_msg;
-
-public:
-	virtual ~Error() throw (){};
-	Error(const char* msg): _msg(std::string(msg)){};
-	const char* what() const throw(){ return _msg.c_str();}
-};
-
 //CLIENT IMPLEMENTATION#########################################################################################################
 
 Client::Client(int clientfd, const std::string hostname): _hostname(hostname), _clfd(clientfd), _state(0){}
@@ -46,7 +35,7 @@ void Client::isRegistered() {
 		if (!(_state & REG)) {
 			_state += REG;
 			std::cout << "User: " << colstring(Bblue, _username) << colstring(Bgreen, std::string(" Registered")) << std::endl;
-			Server::reply(*this, );
+			//Server::reply(*this, );
 		}
 	}
 	std::cout << "Registering ... \n" << colstring(Bred, std::string("Missing "));
@@ -59,7 +48,11 @@ void Client::isRegistered() {
 	std::cout << std::endl;
 }
 
+
+void Client::reply(const std::string& msg) const {if (send(_clfd, msg.c_str(), msg.size(), 0) == -1) throw Error("Error: Client::reply send failed.");}
+
 //SERVER IMPLEMENTATIONS#########################################################################################################
+
 Server::~Server(){}
 
 Server::Server(int port, const std::string &pass): _host(std::string("127.0.0.1")), _pass(pass), _opass("b_operator"), _port(port) {
@@ -151,7 +144,7 @@ std::string	Server::Get_message(int clfd) {
 	std::string	msg;
 	char	buf[BUFFER_SIZE];
 	bzero(buf, BUFFER_SIZE);
-	std::vector<Client>::iterator client = getClient(clfd);
+	std::vector<Client>::iterator client = getClientit(clfd);
 	msg = client->Get_msg();
 
 	while (!std::memchr(buf, '\n', BUFFER_SIZE)){
@@ -189,7 +182,7 @@ std::vector<std::string> Server::split(std::string msg) {
 }
 
 void	Server::Disconnect_client(int clfd) {
-	std::vector<Client>::iterator cl = getClient(clfd);
+	std::vector<Client>::iterator cl = getClientit(clfd);
 	std::vector<pollfd>::iterator pfd = getPollfd(clfd);
 
 	std::cout << colstring(Bcyan, std::string("User: ")) << 
@@ -199,6 +192,8 @@ void	Server::Disconnect_client(int clfd) {
 	_pollfds.erase(pfd);
 	_clients.erase(cl);
 }
+
+//std::vector<std::string>
 
 void	Server::Client_messages(int current_clfd) {
 	std::vector<std::string> messages;
@@ -251,7 +246,7 @@ std::vector<pollfd>::iterator Server::getPollfd(int fd){
 	return _pollfds.begin();
 }
 
-std::vector<Client>::iterator Server::getClient(int fd){
+std::vector<Client>::iterator Server::getClientit(int fd){
 	for (std::vector<Client>::iterator it = _clients.begin(); it != _clients.end(); it++)
 		if (it->Get_clfd() == fd) return it;
 	throw Error("Error: Server::getClient can't find client.");
@@ -263,6 +258,7 @@ std::vector<Client>::iterator Server::getClient(int fd){
 std::string Server::Get_host(){ return _host;}
 std::string Server::Get_pass(){ return _pass;}
 std::string Server::Get_opass(){ return _opass;}
+
 
 //MAIN##########################################################################################################################
 

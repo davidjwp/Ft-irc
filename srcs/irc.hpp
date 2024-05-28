@@ -40,6 +40,17 @@ enum Credentials{
 #define rescol "\033[0m"
 #define colstring(col, msg)(col + msg + rescol)
 
+//EXCEPTION
+class Error: public std::exception{
+private:
+	std::string	_msg;
+
+public:
+	virtual ~Error() throw (){};
+	Error(const char* msg): _msg(std::string(msg)){};
+	const char* what() const throw(){ return _msg.c_str();}
+};
+
 class Channel {
 private:
 
@@ -89,6 +100,7 @@ public:
 	void	addMsg(std::string);
 
 	void	isRegistered();
+	void reply(const std::string&) const;
 };
 
 class Server {
@@ -114,7 +126,7 @@ public:
 	void	Client_messages(int);
 	std::string Get_message(int fd);
 	void	Proc_message(std::string, int);
-	std::vector<Client>::iterator	getClient(int fd);
+	std::vector<Client>::iterator	getClientit(int fd);
 	std::vector<pollfd>::iterator	getPollfd(int fd);
 	std::vector<std::string> split(std::string);
 	void	Disconnect_client(int);
@@ -145,6 +157,19 @@ public:
 	void	cLIST(std::vector<std::string>, int);
 
 	static void	reply(Client, std::string);
+};
+
+
+class Reply{
+
+public:
+	//NICK
+	static void ERR_NONICKNAMEGIVEN(Client&);
+	static void ERR_ERRONEUSNICKNAME(Client&, std::string&);
+	static void ERR_NICKNAMEINUSE(Client&, std::string&);
+	//static void ERR_NICKCOLLISION(Client&, std::string&);
+	//USER
+	static void ;
 };
 
 #endif
