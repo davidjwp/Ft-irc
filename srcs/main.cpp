@@ -1,6 +1,8 @@
 #include "irc.hpp"
 
 bool stop_server = false;
+//REPLIES#######################################################################################################################
+static void RPL_WELCOME(const Client& cl){ cl.reply(" 001 " + cl.Get_nick() + " :Welcome to the Internet Relay Network, " + cl.Get_nick());}
 
 //CLIENT IMPLEMENTATION#########################################################################################################
 
@@ -10,14 +12,15 @@ Client::~Client(){}
 
 //GETTERS
 
-std::string Client::Get_host(){ return _hostname;}
-std::string Client::Get_nick(){ return _nickname;}
-std::string Client::Get_chan(){ return _channel;}
-std::string Client::Get_user(){ return _username;}
-std::string	Client::Get_msg(){ return _msg;}
-std::string Client::Get_realname(){ return _realname;}
-int	Client::Get_state(){ return _state;}
-int	Client::Get_clfd(){ return _clfd;}
+const std::string Client::Get_host() const { return _hostname;}
+const std::string Client::Get_nick() const { return _nickname;}
+const std::string Client::Get_chan() const { return _channel;}
+const std::string Client::Get_user() const { return _username;}
+const std::string	Client::Get_msg() const { return _msg;}
+const std::string Client::Get_realname() const { return _realname;}
+const std::string Client::Get_servname() const { return _servname;}
+int	Client::Get_state() const { return _state;}
+int	Client::Get_clfd() const { return _clfd;}
 
 //SETTERS
 
@@ -26,16 +29,16 @@ void Client::Set_nick(std::string nick){ if (!(_state & NICK)) _state += NICK; _
 void Client::Set_chan(std::string chan){ _channel = chan;}
 void Client::Set_user(std::string user){ if (!(_state & USER)) _state += USER; _username = user;}
 void Client::Set_msg(std::string msg){ _msg = msg;}
-void Client::Set_realname(std::string realn){ if (!(_state & NICK)) _state += NICK; _realname = realn;}
+void Client::Set_realname(std::string realn){ _realname = realn;}
 void Client::Set_state(int state){ _state += state;}
+void Client::Set_servname(std::string servname){_servname = servname;}
 void Client::addMsg(std::string msg){ _msg += msg;}
 
 void Client::isRegistered() {
 	if (_state & NICK && _state & USER && _state & PASS) {
 		if (!(_state & REG)) {
 			_state += REG;
-			std::cout << "User: " << colstring(Bblue, _username) << colstring(Bgreen, std::string(" Registered")) << std::endl;
-			//Server::reply(*this, );
+			Reply::RPL_WELCOME(*this);
 		}
 	}
 	std::cout << "Registering ... \n" << colstring(Bred, std::string("Missing "));
@@ -49,7 +52,20 @@ void Client::isRegistered() {
 }
 
 
-void Client::reply(const std::string& msg) const {if (send(_clfd, msg.c_str(), msg.size(), 0) == -1) throw Error("Error: Client::reply send failed.");}
+std::string& Client::makeCLname() const {
+	std::string name(":");
+
+	if (_state & USER) name += _username;
+	if (_state & NICK) name += "!" + _nickname;
+	return name += "@localhost";
+}
+
+void Client::reply(const std::string& msg) const {
+	std::string fpacket(msg);
+	fpacket.insert(0, makeCLname());
+	fpacket += "\n\r";
+	if (send(_clfd, fpacket.c_str(), fpacket.size(), 0) == -1) throw Error("Error: Client::reply send failed.");
+}
 
 //SERVER IMPLEMENTATIONS#########################################################################################################
 
@@ -229,7 +245,7 @@ void	Server::Proc_message(std::string message, int clfd) {
 							"PART", "NAMES", "MODE", "KICK", "INVITE", "TOPIC"};
 	
 	void	(Server::*commands[])(std::vector<std::string> msg_split, int clfd) = {
-		&Server::cNICK/*, &Server::cUSER, &Server::cPASS, &Server::cPRIVMSG, 
+		&Server::cNICK, &Server::cUSER, &Server::cPASS/*, &Server::cPRIVMSG, 
 		&Server::cJOIN, &Server::cOPER, &Server::cPART, &Server::cNAMES, &Server::cMODE, &Server::cKICK, 
 		&Server::cINVITE, &Server::cTOPIC*/};
 

@@ -6,7 +6,7 @@
 /*   By: djacobs <djacobs@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/01 12:37:14 by prossi            #+#    #+#             */
-/*   Updated: 2024/05/24 22:26:13 by djacobs          ###   ########.fr       */
+/*   Updated: 2024/05/29 17:40:20 by djacobs          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,6 +84,7 @@ int Server::cmdPrvMsg(std::vector<String> params, Client &cl)
         paquet += "\r\n";
         if (send(recipient.getFd(), paquet.c_str(), paquet.length(), 0) < 0)
             throw std::out_of_range("error while sendig in private message");
+        std::cout << "\033[32m" << paquet.c_str() << "\033[0m" << std::endl;
     }
     catch(const std::exception& e)
     {

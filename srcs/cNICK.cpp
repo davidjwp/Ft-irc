@@ -1,9 +1,10 @@
 #include "irc.hpp"
 
-void Reply::ERR_NONICKNAMEGIVEN(Client& cl) { cl.reply(cl.Get_nick() + ":No nickname given");}
-void Reply::ERR_ERRONEUSNICKNAME(Client& cl, std::string& err) { cl.reply(cl.Get_nick() + " " + err + ":Erroneous nickname");}
-void Reply::ERR_NICKNAMEINUSE(Client& cl, std::string& err) { cl.reply(cl.Get_nick() + " " + err + ":Nickname is already in use");}
-//void Reply::ERR_NICKCOLLISION(Client& cl, std::string& err) { cl.reply(cl.Get_nick() + " " + ":Nickname collision KILL from " + cl.Get_user() + "@" + cl.Get_host());}
+void Reply::ERR_NONICKNAMEGIVEN(const Client& cl) { cl.reply(" 431 " + cl.Get_nick() + " :No nickname given");}
+
+void Reply::ERR_ERRONEUSNICKNAME(const Client& cl, const std::string& err) { cl.reply(" 432 " + cl.Get_nick() + " " + err + ":Erroneous nickname");}
+
+void Reply::ERR_NICKNAMEINUSE(const Client& cl, const std::string& err) { cl.reply(" 433 " + cl.Get_nick() + " " + err + ":Nickname is already in use");}
 
 void Server::cNICK(std::vector<std::string> messages, int fd){
 	std::vector<Client>::iterator cl = getClientit(fd);
@@ -32,11 +33,3 @@ void Server::cNICK(std::vector<std::string> messages, int fd){
 	cl->Set_nick(*msg);
 	cl->isRegistered();
 }
-
-
-/*
-ERR_NONICKNAMEGIVEN (431)
-ERR_ERRONEUSNICKNAME (432)
-ERR_NICKNAMEINUSE (433)
-ERR_NICKCOLLISION (436)
-*/

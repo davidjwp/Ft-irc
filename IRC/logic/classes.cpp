@@ -6,7 +6,7 @@
 /*   By: djacobs <djacobs@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/01 12:37:14 by prossi            #+#    #+#             */
-/*   Updated: 2024/05/26 15:53:10 by djacobs          ###   ########.fr       */
+/*   Updated: 2024/05/29 17:39:37 by djacobs          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -387,6 +387,8 @@ void	Channel::broadcast(std::string message)
 	{
 		if (send(_clients[i].getFd(), message.c_str(), message.length(), 0) < 0)
 			throw std::out_of_range("error while broadcasting");
+		std::cout << "\033[32m" << message.c_str() << "\033[0m" << std::endl;
+
 	}
 }
 
@@ -400,6 +402,7 @@ void	Channel::broadcast(std::string message, Client &cl)
 		{
 			if (send(_clients[i].getFd(), message.c_str(), message.length(), 0) < 0)
 				throw std::out_of_range("error while broadcasting");
+			std::cout << "\033[32m" << message.c_str() << "\033[0m" << std::endl;
 		}
 	}
 }
@@ -436,6 +439,8 @@ void    Client::reply(String msg)
     std::cout << "---> " << paquet << std::endl;
     if (send(_sockfd, paquet.c_str(), paquet.length(), 0) < 0)
         throw(std::out_of_range("Error while sending"));
+	
+std::cout << "\033[32m" << paquet.c_str() << "\033[0m" << std::endl;
 }
 
 void    Client::welcome() 
@@ -446,11 +451,6 @@ void    Client::welcome()
         return ;
     }
     _state = REGISTERED;
-	//debug
-	std::cout << "001 " + _nickname + " :Welcome " +_nickname +  " into our irc network" << std::endl;
-    
-	//"<client> :Welcome to the <networkname> Network, <nick>[!<user>@<host>]"
-	//
 	reply("001 " + _nickname + " :Welcome " +_nickname +  " into our irc network");//change that to modern irc protocol too
     std::cout << _nickname << " is registered" << std::endl;
 }

@@ -29,6 +29,8 @@ enum Credentials{
 	REG  = 8,
 };
 
+#define USERLEN 32
+
 #define BUFFER_SIZE 256
 //ESCAPE CODES
 #define Bblue "\033[1;34m"
@@ -68,6 +70,7 @@ private:
 	std::string	_username;
 	std::string	_realname;
 	std::string	_channel;
+	std::string _servname;
 
 	int	_clfd;
 	int _state;
@@ -80,14 +83,15 @@ public:
 
 
 	//getters
-	std::string Get_host();
-	std::string Get_nick();
-	std::string Get_chan();
-	std::string Get_user();
-	std::string	Get_msg();
-	std::string	Get_realname();
-	int	Get_state();
-	int Get_clfd();
+	const std::string Get_host() const;
+	const std::string Get_nick() const;
+	const std::string Get_chan() const;
+	const std::string Get_user() const;
+	const std::string Get_msg() const;
+	const std::string Get_realname() const;
+	const std::string Get_servname() const;
+	int	Get_state() const;
+	int Get_clfd() const;
 
 	//setters
 	void	Set_host(std::string);
@@ -97,9 +101,11 @@ public:
 	void	Set_msg(std::string);
 	void	Set_realname(std::string);
 	void	Set_state(int);
+	void	Set_servname(std::string);
 	void	addMsg(std::string);
 
 	void	isRegistered();
+	std::string& makeCLname() const;
 	void reply(const std::string&) const;
 };
 
@@ -143,8 +149,8 @@ public:
 	void	cPASS(std::vector<std::string>, int);
 	void	cPRIVMSG(std::vector<std::string>, int);
 	void	cJOIN(std::vector<std::string>, int);
-	void	cWHO(std::vector<std::string>, int);
-	void	cPING(std::vector<std::string>, int);
+	//void	cWHO(std::vector<std::string>, int);
+	//void	cPING(std::vector<std::string>, int);
 	void	cOPER(std::vector<std::string>, int);
 	void	cPART(std::vector<std::string>, int);
 	void	cNAMES(std::vector<std::string>, int);
@@ -159,17 +165,24 @@ public:
 	static void	reply(Client, std::string);
 };
 
-
+//NUMERIC REPLIES
 class Reply{
 
 public:
-	//NICK
-	static void ERR_NONICKNAMEGIVEN(Client&);
-	static void ERR_ERRONEUSNICKNAME(Client&, std::string&);
-	static void ERR_NICKNAMEINUSE(Client&, std::string&);
-	//static void ERR_NICKCOLLISION(Client&, std::string&);
-	//USER
-	static void ;
+	//(001)
+	static void RPL_WELCOME(const Client&);
+	//(431) 
+	static void ERR_NONICKNAMEGIVEN(const Client&);
+	//(432)
+	static void ERR_ERRONEUSNICKNAME(const Client&, const std::string&);
+	//(433)
+	static void ERR_NICKNAMEINUSE(const Client&, const std::string&);
+	//(461)
+	static void ERR_NEEDMOREPARAMS(const Client&, const std::string&);
+	//(462)
+	static void ERR_ALREADYREGISTERED(const Client&);
+	//(464)
+	static void ERR_PASSWDMISMATCH(const Client&);
 };
 
 #endif

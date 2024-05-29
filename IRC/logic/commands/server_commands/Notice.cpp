@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Notice.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: prossi <prossi@student.42adel.org.au>      +#+  +:+       +#+        */
+/*   By: djacobs <djacobs@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/01 12:37:14 by prossi            #+#    #+#             */
-/*   Updated: 2023/02/02 14:04:17 by prossi           ###   ########.fr       */
+/*   Updated: 2024/05/29 17:40:05 by djacobs          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,6 +84,7 @@ int Server::cmdNotice(std::vector<String> params, Client &cl)
         paquet += "\r\n";
         if (send(recipient.getFd(), paquet.c_str(), paquet.length(), 0) < 0)
             throw std::out_of_range("error while sending in notice");
+		std::cout << "\033[32m" << paquet.c_str() << "\033[0m" << std::endl;
     }
     catch(const std::exception& e)
     {
