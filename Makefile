@@ -1,33 +1,34 @@
-NAME	= ircserv
-#CHANGE TO c++`
-CC	= g++
+NAME    = ircserv
 
-CFLAGS	= -g -std=c++98 -Wextra -Werror -Wall 
+# Compiler and flags
+CC      = g++
+CFLAGS  = -g -std=c++98 -Wextra -Werror -Wall
 
-HEADERS	= srcs/irc.hpp
+# Directories and files
+HEADERS = srcs/irc.hpp
+SRCS    = srcs/main.cpp \
+		srcs/cNICK.cpp \
+		srcs/cUSER.cpp \
+		srcs/cPASS.cpp \
+		srcs/cMODE.cpp \
+		srcs/cJOIN.cpp
 
-SRCS	= srcs/main.cpp srcs/cNICK.cpp \
-						srcs/cUSER.cpp \
-						srcs/cPASS.cpp \
-						srcs/cMODE.cpp \
-						srcs/cJOIN.cpp 
+OBJS_DIR = objs/
+OBJS    = $(SRCS:srcs/%.cpp=$(OBJS_DIR)%.o)
 
-OBJS_DIR	= objs/
-OBJS	= $(SRCS:%.cpp=$(OBJS_DIR)%.o)
-
-all:$(NAME)
+all: $(NAME)
 
 $(NAME): $(OBJS)
 	$(CC) $(CFLAGS) $(OBJS) -o $(NAME)
 
-$(OBJS_DIR)%.o: %.cpp $(HEADER)
-	@mkdir -p $(@D)
+$(OBJS_DIR)%.o: srcs/%.cpp $(HEADERS)
+	@mkdir -p $(OBJS_DIR)
 	$(CC) -c $(CFLAGS) $< -o $@
-	
+
 clean:
 	rm -f $(OBJS)
 
 fclean: clean
-	rm $(NAME)
+	rm -f $(NAME)
 
 re: fclean all

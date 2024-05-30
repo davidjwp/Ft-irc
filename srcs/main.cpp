@@ -3,17 +3,47 @@
 //CHANNEL########################################################################################################################
 Channel::Channel(){}
 
-Channel::Channel(const std::string& name, Client& client): 
+Channel::Channel(const std::string& name, Client client): 
 _name(name), _inviteo(false), _limit(-1), _pass(""), _topic("") {
-	_clients.push_back(client.Get_nick());
+	_clients[client.Get_nick()] = client;
 	_operators[client.Get_nick()] = client.Get_clfd();
 }
+
+const std::string Channel::getName() const {return _name;}
+bool Channel::getInvit() const {return _inviteo;}
+int Channel::getLimit() const {return _limit;}
+const std::string Channel::getPass() const {return _pass;}
+const std::string Channel::getTopic() const {return _topic;}
+const std::map<const std::string, Client>::iterator Channel::getClients() { return _clients.begin();}
+const std::map<const std::string, int>::iterator Channel::getOperators() { return _operators.begin();}
+
+void Channel::setName(std::string name) {_name = name;}
+void Channel::setInviteo(bool inv) {_inviteo = inv;}
+void Channel::setLimit(int limit) {_limit = limit;}
+void Channel::setPass(std::string pass) {_pass = pass;}
+void Channel::setTopic(std::string topic) {_topic = topic;}
 
 //REPLIES######################################################################################################################
 bool stop_server = false;
 void Reply::RPL_WELCOME(const Client& cl){ cl.reply(" 001 " + cl.Get_nick() + " :Welcome to the Internet Relay Network, " + cl.Get_nick());}
 
 //CLIENT IMPLEMENTATION#########################################################################################################
+
+Client::Client(): 
+_hostname(""), _nickname(""), _username(""), 
+_realname(""), _channel(""), _clfd(0), _state(0), _msg(""){}
+
+Client& Client::operator=( Client& cl){
+	_hostname = cl.Get_host();
+	_nickname = cl.Get_nick();
+	_username = cl.Get_user();
+	_realname = cl.Get_realname();
+	_channel = cl.Get_chan();
+	_clfd = cl.Get_clfd();
+	_state = cl.Get_state();
+	_msg = cl.Get_msg();
+	return *this;
+}
 
 Client::Client(int clientfd, const std::string hostname): 
 _hostname(hostname), _nickname(""), _username(""), _realname(""), 
@@ -190,8 +220,6 @@ std::string	Server::Get_message(int clfd) {
 	return msg;
 }
 
-
-
 std::vector<std::string> Server::split(std::string msg) {
 	std::vector<std::string> cmd;
 	std::stringstream str(msg);
@@ -202,7 +230,7 @@ std::vector<std::string> Server::split(std::string msg) {
 	while (std::getline(str, tmp, '\n')) 
 	{
 		cmd.push_back(tmp);
-		std::cout << cmd.at(i++) << std::endl;
+		std::cout << cmd.at(i++) << std::endl;//this might is where the output comes from
 	}
 	return cmd;
 }
@@ -282,6 +310,20 @@ std::vector<Client>::iterator Server::getClientit(int fd){
 		if (it->Get_clfd() == fd) return it;
 	throw Error("Error: Server::getClient can't find client.");
 	return _clients.begin();
+}
+
+Client Server::getClientName(const std::string& nickname){
+	for (std::vector<Client>::iterator it = _clients.begin(); it != _clients.end(); it++)
+		if (it->Get_nick() == nickname) return *it;
+	throw Error("Error: Server::getClientName can't find client.");
+	return _clients.at(0);
+}
+
+std::vector<Channel>::iterator Server::getChanName(const std::string& chan){
+	if (!_channels.size()) throw Error ("Error: Server::getChanName no channel.");
+	for (std::vector<Channel>::iterator it = _channels.begin(); it != _channels.end(); it++)
+		if (it->getName() == chan) return it;
+	throw Error ("Error: Server::getChanName can't find channel.");
 }
 
 //GETTERS

@@ -20,6 +20,7 @@
 #include <sstream>
 #include <errno.h>
 #include <map>
+#include <cctype>
 
 extern bool	stop_server;
 
@@ -28,6 +29,8 @@ enum Credentials{
 	NICK = 2,
 	USER = 4,
 	REG  = 8,
+	INV	 = 16,
+	OPER = 32,
 };
 
 #define USERLEN 32
@@ -65,11 +68,27 @@ private:
 	int	_limit;
 	std::string _pass;
 	std::string _topic;
-	std::vector<std::string> _clients;
+	std::map<const std::string, Client> _clients;
 	std::map<const std::string, int>	_operators;
-	Channel();
 public:
-	Channel(const std::string& chanName, Client& client);
+	Channel();
+	Channel(const std::string& chanName, Client client);
+
+	const std::string getName() const;
+	bool getInvit() const;
+	int getLimit() const;
+	const std::string getPass() const;
+	const std::string getTopic() const;
+	const std::map<const std::string, Client>::iterator getClients();
+	const std::map<const std::string, int>::iterator getOperators();
+
+	void setName(std::string);
+	void setInviteo(bool);
+	void setLimit(int);
+	void setPass(std::string);
+	void setTopic(std::string);
+	//void addClient();
+	//void setTopic(std::string);
 
 };
 
@@ -87,6 +106,8 @@ private:
 	std::string _msg;
 
 public:
+	Client();
+	Client& operator=(Client&);
 	Client(int clientfd, const std::string hostname);
 	~Client();
 
@@ -144,7 +165,8 @@ public:
 	std::vector<pollfd>::iterator	getPollfd(int fd);
 	std::vector<std::string> split(std::string);
 	void	Disconnect_client(int);
-
+	Client getClientName(const std::string&);
+	std::vector<Channel>::iterator getChanName(const std::string&); 
 
 	//getters
 
@@ -179,6 +201,8 @@ class Reply{
 public:
 	//(001)
 	static void RPL_WELCOME(const Client&);
+	//(221)
+	static void RPL_UMODEIS(const Client&);
 	//(401)
 	static void ERR_NOSUCHNICK(const Client&, const std::string&);
 	//(431) 
@@ -199,6 +223,10 @@ public:
 	static void ERR_PASSWDMISMATCH(const Client&);
 	//(476)
 	static void ERR_BADCHANMASK(const Client&, const std::string&);
+	//(482)
+	static void ERR_CHANOPRIVSNEEDED(const Client&);
+	//(501)
+	static void ERR_UMODEUNKNOWNFLAG(const Client&);
 	//(502)
 	static void ERR_USERSDONTMATCH(const Client&);
 };
