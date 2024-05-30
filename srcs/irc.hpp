@@ -19,6 +19,7 @@
 #include <string>
 #include <sstream>
 #include <errno.h>
+#include <map>
 
 extern bool	stop_server;
 
@@ -53,12 +54,22 @@ public:
 	const char* what() const throw(){ return _msg.c_str();}
 };
 
+class Client;
+
 class Channel {
 private:
-
 	std::string	_name;
-	std::vector<std::string>	_clients;
+
+	bool _inviteo;
+
+	int	_limit;
+	std::string _pass;
+	std::string _topic;
+	std::vector<std::string> _clients;
+	std::map<const std::string, int>	_operators;
+	Channel();
 public:
+	Channel(const std::string& chanName, Client& client);
 
 };
 
@@ -70,7 +81,6 @@ private:
 	std::string	_username;
 	std::string	_realname;
 	std::string	_channel;
-	std::string _servname;
 
 	int	_clfd;
 	int _state;
@@ -89,7 +99,6 @@ public:
 	const std::string Get_user() const;
 	const std::string Get_msg() const;
 	const std::string Get_realname() const;
-	const std::string Get_servname() const;
 	int	Get_state() const;
 	int Get_clfd() const;
 
@@ -101,11 +110,10 @@ public:
 	void	Set_msg(std::string);
 	void	Set_realname(std::string);
 	void	Set_state(int);
-	void	Set_servname(std::string);
 	void	addMsg(std::string);
 
 	void	isRegistered();
-	std::string& makeCLname() const;
+	const std::string makeCLname() const;
 	void reply(const std::string&) const;
 };
 
@@ -171,18 +179,28 @@ class Reply{
 public:
 	//(001)
 	static void RPL_WELCOME(const Client&);
+	//(401)
+	static void ERR_NOSUCHNICK(const Client&, const std::string&);
 	//(431) 
 	static void ERR_NONICKNAMEGIVEN(const Client&);
 	//(432)
 	static void ERR_ERRONEUSNICKNAME(const Client&, const std::string&);
 	//(433)
 	static void ERR_NICKNAMEINUSE(const Client&, const std::string&);
+	//(442)
+	static void ERR_NOTONCHANNEL(const Client&);
+	//(451)
+	static void ERR_NOTREGISTERED(const Client&);
 	//(461)
 	static void ERR_NEEDMOREPARAMS(const Client&, const std::string&);
 	//(462)
 	static void ERR_ALREADYREGISTERED(const Client&);
 	//(464)
 	static void ERR_PASSWDMISMATCH(const Client&);
+	//(476)
+	static void ERR_BADCHANMASK(const Client&, const std::string&);
+	//(502)
+	static void ERR_USERSDONTMATCH(const Client&);
 };
 
 #endif

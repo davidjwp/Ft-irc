@@ -15,8 +15,7 @@ void	Server::cUSER(std::vector<std::string> messages, int fd){
 	if (cl->Get_state() & REG) Reply::ERR_ALREADYREGISTERED(*cl); 
 
 	cl->Set_user(*msg++);
-	cl->Set_host(*msg++);
-	cl->Set_servname(*msg++);
+	msg += 1;
 	std::string realname = &(msg->at(1));
 	while (++msg != messages.end())
 		realname += (" " + *msg);

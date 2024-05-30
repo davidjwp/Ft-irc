@@ -8,7 +8,9 @@ HEADERS	= srcs/irc.hpp
 
 SRCS	= srcs/main.cpp srcs/cNICK.cpp \
 						srcs/cUSER.cpp \
-						srcs/cPASS.cpp 
+						srcs/cPASS.cpp \
+						srcs/cMODE.cpp \
+						srcs/cJOIN.cpp 
 
 OBJS_DIR	= objs/
 OBJS	= $(SRCS:%.cpp=$(OBJS_DIR)%.o)

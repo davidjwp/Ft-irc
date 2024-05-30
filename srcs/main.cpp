@@ -1,12 +1,23 @@
 #include "irc.hpp"
 
+//CHANNEL########################################################################################################################
+Channel::Channel(){}
+
+Channel::Channel(const std::string& name, Client& client): 
+_name(name), _inviteo(false), _limit(-1), _pass(""), _topic("") {
+	_clients.push_back(client.Get_nick());
+	_operators[client.Get_nick()] = client.Get_clfd();
+}
+
+//REPLIES######################################################################################################################
 bool stop_server = false;
-//REPLIES#######################################################################################################################
-static void RPL_WELCOME(const Client& cl){ cl.reply(" 001 " + cl.Get_nick() + " :Welcome to the Internet Relay Network, " + cl.Get_nick());}
+void Reply::RPL_WELCOME(const Client& cl){ cl.reply(" 001 " + cl.Get_nick() + " :Welcome to the Internet Relay Network, " + cl.Get_nick());}
 
 //CLIENT IMPLEMENTATION#########################################################################################################
 
-Client::Client(int clientfd, const std::string hostname): _hostname(hostname), _clfd(clientfd), _state(0){}
+Client::Client(int clientfd, const std::string hostname): 
+_hostname(hostname), _nickname(""), _username(""), _realname(""), 
+_channel(""), _clfd(clientfd), _state(0){}
 
 Client::~Client(){}
 
@@ -18,7 +29,6 @@ const std::string Client::Get_chan() const { return _channel;}
 const std::string Client::Get_user() const { return _username;}
 const std::string	Client::Get_msg() const { return _msg;}
 const std::string Client::Get_realname() const { return _realname;}
-const std::string Client::Get_servname() const { return _servname;}
 int	Client::Get_state() const { return _state;}
 int	Client::Get_clfd() const { return _clfd;}
 
@@ -31,7 +41,6 @@ void Client::Set_user(std::string user){ if (!(_state & USER)) _state += USER; _
 void Client::Set_msg(std::string msg){ _msg = msg;}
 void Client::Set_realname(std::string realn){ _realname = realn;}
 void Client::Set_state(int state){ _state += state;}
-void Client::Set_servname(std::string servname){_servname = servname;}
 void Client::addMsg(std::string msg){ _msg += msg;}
 
 void Client::isRegistered() {
@@ -52,7 +61,7 @@ void Client::isRegistered() {
 }
 
 
-std::string& Client::makeCLname() const {
+const std::string Client::makeCLname() const {
 	std::string name(":");
 
 	if (_state & USER) name += _username;
@@ -65,6 +74,7 @@ void Client::reply(const std::string& msg) const {
 	fpacket.insert(0, makeCLname());
 	fpacket += "\n\r";
 	if (send(_clfd, fpacket.c_str(), fpacket.size(), 0) == -1) throw Error("Error: Client::reply send failed.");
+	std::cout << Bgreen << fpacket << rescol << std::endl; 
 }
 
 //SERVER IMPLEMENTATIONS#########################################################################################################
@@ -226,7 +236,10 @@ void	Server::Client_messages(int current_clfd) {
 }
 
 //Channel specific commands 
-//JOIN, OPER, KICK, MODE, TOPIC
+//JOIN, OPER, KICK, MODE, TOPIC, NAMES, OPER, PART, INVITE
+
+//User specific commands
+//NICK, USER, PASS
 void	Server::Proc_message(std::string message, int clfd) {
 
 	std::vector<std::string> msg_split;
@@ -241,17 +254,19 @@ void	Server::Proc_message(std::string message, int clfd) {
 	while (getline(stream, tmp, ' '))
 		if (tmp.size()) msg_split.push_back(tmp);
 
-	std::string  ccoms[] = {"NICK", "USER", "PASS", "PRIVMSG", "JOIN", "OPER", \
+	std::string  ccoms[] = {"NICK", "USER", "PASS", "MODE", "JOIN", "PRIVMSG", "OPER", \
 							"PART", "NAMES", "MODE", "KICK", "INVITE", "TOPIC"};
 	
 	void	(Server::*commands[])(std::vector<std::string> msg_split, int clfd) = {
-		&Server::cNICK, &Server::cUSER, &Server::cPASS/*, &Server::cPRIVMSG, 
-		&Server::cJOIN, &Server::cOPER, &Server::cPART, &Server::cNAMES, &Server::cMODE, &Server::cKICK, 
+		&Server::cNICK, &Server::cUSER, &Server::cPASS, &Server::cMODE, &Server::cJOIN/*, &Server::cPRIVMSG, 
+		&Server::cOPER, &Server::cPART, &Server::cNAMES, &Server::cKICK, 
 		&Server::cINVITE, &Server::cTOPIC*/};
 
-	for (int i = 0; i < 17; i++){
-		if (!msg_split[0].compare(ccoms[i]))
-			(this->*commands[i])(msg_split, clfd);
+	for (int i = 0; i < 13; i++){
+		if (!msg_split[0].compare(ccoms[i])) {
+			(this->*commands[i])(msg_split, clfd); 
+			break;
+		}
 	}
 }
 
@@ -332,3 +347,49 @@ int	main(int ac, char **av) {
 //}
 
 //watch out for channel names, nicknames, username and all changes to clients in the PROTOCOL
+
+/*
+### Common Privileged Channel Modes
+
+1. **Invite-Only (`+i`)**:
+   - **Who Can Set It**: Only channel operators or higher can set this mode.
+   - **Command**: `/mode #channel +i`
+   
+2. **Moderated (`+m`)**:
+   - **Who Can Set It**: Only channel operators or higher can set this mode.
+   - **Command**: `/mode #channel +m`
+   
+3. **Topic Settable by Ops Only (`+t`)**:
+   - **Who Can Set It**: Only channel operators or higher can set this mode.
+   - **Command**: `/mode #channel +t`
+   
+4. **Key (Password) Protected (`+k`)**:
+   - **Who Can Set It**: Only channel operators or higher can set this mode.
+   - **Command**: `/mode #channel +k <password>`
+   
+5. **User Limit (`+l`)**:
+   - **Who Can Set It**: Only channel operators or higher can set this mode.
+   - **Command**: `/mode #channel +l <number>`
+
+### Example
+
+If a user named `john` is a channel operator in the `#example` channel, he can set the channel to invite-only mode with the following command:
+
+```
+/mode #example +i
+```
+
+If `john` is not a channel operator and attempts to set the invite-only mode, he will receive an error, typically `ERR_CHANOPRIVSNEEDED` (482):
+
+```
+:irc.example.com 482 john #example :You're not channel operator
+```
+
+### Permissions and Roles
+
+- **Channel Founder (`+q`)**: The highest level of control, typically can do anything within the channel.
+- **Channel Protected (`+a`)**: Protected status, often cannot be kicked by regular operators.
+- **Channel Operator (`+o`)**: Standard operator, can change channel modes, kick users, etc.
+- **Channel Half-Operator (`+h`)**: Limited operator, can perform some but not all operator functions.
+- **Voice (`+v`)**: Can speak in moderated channels but does not have operator privileges.
+*/

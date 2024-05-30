@@ -1,5 +1,7 @@
 #include "irc.hpp"
 
+//DONE
+
 void Reply::ERR_PASSWDMISMATCH(const Client& cl) {cl.reply(" 464 " + cl.Get_nick() + " :Password incorrect");}
 
 void	Server::cPASS(std::vector<std::string> messages, int fd) {
@@ -15,6 +17,7 @@ void	Server::cPASS(std::vector<std::string> messages, int fd) {
 		return ;
 	}
 
+	if (msg->find('\r') != std::string::npos) msg->erase(msg->find('\r'));
 	if (*msg != _pass) Reply::ERR_PASSWDMISMATCH(*cl);
 	cl->Set_state(PASS);
 }
