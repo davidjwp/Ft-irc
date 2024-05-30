@@ -14,7 +14,8 @@ bool Channel::getInvit() const {return _inviteo;}
 int Channel::getLimit() const {return _limit;}
 const std::string Channel::getPass() const {return _pass;}
 const std::string Channel::getTopic() const {return _topic;}
-const std::map<const std::string, Client>::iterator Channel::getClients() { return _clients.begin();}
+const std::map<const std::string, Client>::iterator Channel::getClientsIt() { return _clients.begin();}
+const std::map<const std::string, Client> Channel::getClient() {return _clients;}
 const std::map<const std::string, int>::iterator Channel::getOperators() { return _operators.begin();}
 
 void Channel::setName(std::string name) {_name = name;}
@@ -22,6 +23,11 @@ void Channel::setInviteo(bool inv) {_inviteo = inv;}
 void Channel::setLimit(int limit) {_limit = limit;}
 void Channel::setPass(std::string pass) {_pass = pass;}
 void Channel::setTopic(std::string topic) {_topic = topic;}
+
+bool Channel::IsBanned(const std::string& client) const{
+	if (_clients.find(client) != _clients.end()) return true;
+	return false;
+}
 
 //REPLIES######################################################################################################################
 bool stop_server = false;
@@ -31,14 +37,14 @@ void Reply::RPL_WELCOME(const Client& cl){ cl.reply(" 001 " + cl.Get_nick() + " 
 
 Client::Client(): 
 _hostname(""), _nickname(""), _username(""), 
-_realname(""), _channel(""), _clfd(0), _state(0), _msg(""){}
+_realname(""), _channels(std::vector<Channel>()), _clfd(0), _state(0), _msg(""){}
 
 Client& Client::operator=( Client& cl){
 	_hostname = cl.Get_host();
 	_nickname = cl.Get_nick();
 	_username = cl.Get_user();
 	_realname = cl.Get_realname();
-	_channel = cl.Get_chan();
+	_channels = cl.Get_chan();
 	_clfd = cl.Get_clfd();
 	_state = cl.Get_state();
 	_msg = cl.Get_msg();
@@ -47,7 +53,7 @@ Client& Client::operator=( Client& cl){
 
 Client::Client(int clientfd, const std::string hostname): 
 _hostname(hostname), _nickname(""), _username(""), _realname(""), 
-_channel(""), _clfd(clientfd), _state(0){}
+_channels(std::vector<Channel>()), _clfd(clientfd), _state(0){}
 
 Client::~Client(){}
 
@@ -55,7 +61,7 @@ Client::~Client(){}
 
 const std::string Client::Get_host() const { return _hostname;}
 const std::string Client::Get_nick() const { return _nickname;}
-const std::string Client::Get_chan() const { return _channel;}
+std::vector<Channel> Client::Get_chan() const { return _channels;}
 const std::string Client::Get_user() const { return _username;}
 const std::string	Client::Get_msg() const { return _msg;}
 const std::string Client::Get_realname() const { return _realname;}
@@ -66,7 +72,7 @@ int	Client::Get_clfd() const { return _clfd;}
 
 void Client::Set_host(std::string host){ _hostname = host;}
 void Client::Set_nick(std::string nick){ if (!(_state & NICK)) _state += NICK; _nickname = nick;}
-void Client::Set_chan(std::string chan){ _channel = chan;}
+void Client::add_chan(Channel chan){ _channels.push_back(chan);}
 void Client::Set_user(std::string user){ if (!(_state & USER)) _state += USER; _username = user;}
 void Client::Set_msg(std::string msg){ _msg = msg;}
 void Client::Set_realname(std::string realn){ _realname = realn;}
@@ -102,9 +108,9 @@ const std::string Client::makeCLname() const {
 void Client::reply(const std::string& msg) const {
 	std::string fpacket(msg);
 	fpacket.insert(0, makeCLname());
-	fpacket += "\n\r";
+	fpacket += "\r\n";
 	if (send(_clfd, fpacket.c_str(), fpacket.size(), 0) == -1) throw Error("Error: Client::reply send failed.");
-	std::cout << Bgreen << fpacket << rescol << std::endl; 
+	std::cout << colstring(Bgreen, fpacket) << std::endl; 
 }
 
 //SERVER IMPLEMENTATIONS#########################################################################################################
@@ -286,7 +292,7 @@ void	Server::Proc_message(std::string message, int clfd) {
 							"PART", "NAMES", "MODE", "KICK", "INVITE", "TOPIC"};
 	
 	void	(Server::*commands[])(std::vector<std::string> msg_split, int clfd) = {
-		&Server::cNICK, &Server::cUSER, &Server::cPASS, &Server::cMODE, &Server::cJOIN/*, &Server::cPRIVMSG, 
+		&Server::cNICK, &Server::cUSER, &Server::cPASS, &Server::cMODE, &Server::cJOIN, &Server::cPRIVMSG/*, 
 		&Server::cOPER, &Server::cPART, &Server::cNAMES, &Server::cKICK, 
 		&Server::cINVITE, &Server::cTOPIC*/};
 
@@ -319,6 +325,10 @@ Client Server::getClientName(const std::string& nickname){
 	return _clients.at(0);
 }
 
+/*
+	takes a string and outputs a channel iterator corresponding to the string given.
+	if not found throws an exception.
+*/
 std::vector<Channel>::iterator Server::getChanName(const std::string& chan){
 	if (!_channels.size()) throw Error ("Error: Server::getChanName no channel.");
 	for (std::vector<Channel>::iterator it = _channels.begin(); it != _channels.end(); it++)
@@ -365,6 +375,8 @@ int	main(int ac, char **av) {
 
 	return 0;
 }
+
+//IMPLEMENT PING TO PREVENT IRSSI FROM RECONNECTING 
 
 //std::string	Server::Get_message(int clfd) {
 //	std::string	msg;

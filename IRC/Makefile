@@ -1,6 +1,6 @@
 NAME = ircserv
 
-CC = c++
+CC = g++
 
 FLAGS = -g -Werror -Wall -Wextra -std=c++98
 

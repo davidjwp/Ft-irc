@@ -70,6 +70,7 @@ private:
 	std::string _topic;
 	std::map<const std::string, Client> _clients;
 	std::map<const std::string, int>	_operators;
+	std::vector<std::string> _banned;
 public:
 	Channel();
 	Channel(const std::string& chanName, Client client);
@@ -79,7 +80,8 @@ public:
 	int getLimit() const;
 	const std::string getPass() const;
 	const std::string getTopic() const;
-	const std::map<const std::string, Client>::iterator getClients();
+	const std::map<const std::string, Client>::iterator getClientsIt();
+	const std::map<const std::string, Client> getClient();
 	const std::map<const std::string, int>::iterator getOperators();
 
 	void setName(std::string);
@@ -89,6 +91,7 @@ public:
 	void setTopic(std::string);
 	//void addClient();
 	//void setTopic(std::string);
+	bool IsBanned(const std::string&) const;
 
 };
 
@@ -99,7 +102,7 @@ private:
 	std::string	_nickname;
 	std::string	_username;
 	std::string	_realname;
-	std::string	_channel;
+	std::vector<Channel> _channels;
 
 	int	_clfd;
 	int _state;
@@ -116,7 +119,7 @@ public:
 	//getters
 	const std::string Get_host() const;
 	const std::string Get_nick() const;
-	const std::string Get_chan() const;
+	std::vector<Channel> Get_chan() const;
 	const std::string Get_user() const;
 	const std::string Get_msg() const;
 	const std::string Get_realname() const;
@@ -126,6 +129,7 @@ public:
 	//setters
 	void	Set_host(std::string);
 	void	Set_nick(std::string);
+	void	add_chan(Channel);
 	void	Set_chan(std::string);
 	void	Set_user(std::string);
 	void	Set_msg(std::string);
@@ -203,6 +207,12 @@ public:
 	static void RPL_WELCOME(const Client&);
 	//(221)
 	static void RPL_UMODEIS(const Client&);
+	//(332)
+	static void RPL_TOPIC(const Client&, Channel);
+	//(353)
+	static void RPL_NAMREPLY(const Client&, Channel);
+	//(366)
+	static void RPL_ENDOFNAMES(const Client&, std::string);
 	//(401)
 	static void ERR_NOSUCHNICK(const Client&, const std::string&);
 	//(431) 
@@ -212,7 +222,7 @@ public:
 	//(433)
 	static void ERR_NICKNAMEINUSE(const Client&, const std::string&);
 	//(442)
-	static void ERR_NOTONCHANNEL(const Client&);
+	static void ERR_NOTONCHANNEL(const Client&, const std::string);
 	//(451)
 	static void ERR_NOTREGISTERED(const Client&);
 	//(461)
@@ -221,10 +231,18 @@ public:
 	static void ERR_ALREADYREGISTERED(const Client&);
 	//(464)
 	static void ERR_PASSWDMISMATCH(const Client&);
+	//(471)
+	static void ERR_CHANNELISFULL(const Client&, std::string);
+	//(473)
+	static void ERR_INVITEONLYCHAN(const Client&, std::string);
+	//(474)
+	static void ERR_BANNEDFROMCHAN(const Client&, std::string);
+	//(475)
+	static void ERR_BADCHANNELKEY(const Client&, std::string);
 	//(476)
 	static void ERR_BADCHANMASK(const Client&, const std::string&);
 	//(482)
-	static void ERR_CHANOPRIVSNEEDED(const Client&);
+	static void ERR_CHANOPRIVSNEEDED(const Client&, const std::string);
 	//(501)
 	static void ERR_UMODEUNKNOWNFLAG(const Client&);
 	//(502)

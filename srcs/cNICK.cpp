@@ -38,5 +38,6 @@ void Server::cNICK(std::vector<std::string> messages, int fd){
 		if (clients->Get_nick() == *msg) Reply::ERR_NICKNAMEINUSE(*cl, *msg);
 
 	cl->Set_nick(*msg);
+	cl->reply(" NICK :" + *msg);
 	cl->isRegistered();
 }

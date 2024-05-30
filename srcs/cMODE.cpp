@@ -8,9 +8,9 @@ void	Reply::ERR_USERSDONTMATCH(const Client& cl) {cl.reply(" 501 " + cl.Get_nick
 
 void	Reply::ERR_NOTREGISTERED(const Client& cl) {cl.reply(" 451 " + cl.Get_nick() + " :You have not registered");}
 
-void	Reply::ERR_NOTONCHANNEL(const Client& cl) {cl.reply(" 442 " + cl.Get_nick() + " " + cl.Get_chan() + " :You're not on that channel");}
+void	Reply::ERR_NOTONCHANNEL(const Client& cl, const std::string chan) {cl.reply(" 442 " + cl.Get_nick() + " " + chan + " :You're not on that channel");}
 
-void	Reply::ERR_CHANOPRIVSNEEDED(const Client& cl) {cl.reply(" 482 " + cl.Get_nick() + " " + cl.Get_chan() + " :You're not channel operator");}
+void	Reply::ERR_CHANOPRIVSNEEDED(const Client& cl, const std::string chan) {cl.reply(" 482 " + cl.Get_nick() + " " + chan + " :You're not channel operator");}
 
 //void	Reply::ERR_UNKNOWNMODE(const Client& cl){}
 
@@ -48,11 +48,11 @@ void	Server::cMODE(std::vector<std::string> messages, int fd) {
 	if (!(cl->Get_state() & REG)) {Reply::ERR_NOTREGISTERED(*cl); return ;}
 
 
-	if (messages.size() > 2)
+	if (messages.size() > 1)
 		msg = messages.begin() + 1;
 	else {Reply::ERR_NEEDMOREPARAMS(*cl, messages[0]); return ;}
 
-	//for user MODE
+	//for user MODE//look out for this command in channel //or not idk
 	try {
 		Client nick = getClientName(*msg);
 		if (nick.Get_nick() != cl->Get_nick()) {Reply::ERR_USERSDONTMATCH(*cl); return ;}
@@ -71,8 +71,8 @@ void	Server::cMODE(std::vector<std::string> messages, int fd) {
 	}
 	catch (std::exception &err){}
 
-/*
-	for channel MODE
+
+//	for channel MODE
 	try {
 		std::vector<Channel>::iterator chan = getChanName(*msg);
 		if (cl->Get_chan() != chan->getName()) {Reply::ERR_NOTONCHANNEL(*cl); return ;}
@@ -86,14 +86,20 @@ void	Server::cMODE(std::vector<std::string> messages, int fd) {
 			switch (mod) {
 				case ('i') :
 					msg->at(0) == '+' ? chan->setInviteo(true) : chan->setInviteo(false);
-				case ('t') :
-					msg->at(0) == '+' ? chan :
+				//case ('t') :
+				//	msg->at(0) == '+' ? chan : ; not sure what this is yet
+				case ('k') :
+					msg->at(0) == '+' ? chan : ;
+				case ('o') :
+					msg->at(0) == '+' ? : ;
+				case ('l') :
+					msg->at(0) == '+' ? : ;
 			}
 			
 		}
 	}
 	catch (std::exception &err){}
-*/
+
 	//if (*msg == cl->Get_nick()) Reply::ERR_USERSDONTMATCH(*cl);
 
 }

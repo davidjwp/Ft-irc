@@ -1,1 +1,6 @@
-break cJOIN
+catch throw
+catch catch
+break RPL_TOPIC
+break reply
+break RPL_NAMREPLY
+break RPL_NAMREPLY

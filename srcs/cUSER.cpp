@@ -24,8 +24,10 @@ void	Server::cUSER(std::vector<std::string> messages, int fd){
 	
 	if (msg->size() != 1) {
 		std::string realname = &(msg->at(1));
-		while (++msg != messages.end())
+		while (++msg != messages.end()) {
 			realname += (" " + *msg);
+		}
+		if (realname.find('\r') != std::string::npos) realname.erase(realname.find('\r'));
 		cl->Set_realname(realname);
 	}
 	cl->isRegistered();
