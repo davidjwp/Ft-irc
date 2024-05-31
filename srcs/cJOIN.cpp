@@ -96,7 +96,7 @@ void Server::cJOIN(std::vector<std::string> messages, int fd){
 
 		if (chans->getLimit() != -1 && chans->getLimit() <= ChanClientAmount(*chans)) {Reply::ERR_CHANNELISFULL(*cl, chans->getName()); continue ;}
 
-		if (keys && *keyIterator != chans->getPass()) {Reply::ERR_BADCHANNELKEY(*cl, chans->getName()); continue ;}
+		if (keys && chans->getKeyMode() && *keyIterator != chans->getPass()) {Reply::ERR_BADCHANNELKEY(*cl, chans->getName()); continue ;}
 
 		if (chans->IsBanned(cl->Get_nick())) {Reply::ERR_BANNEDFROMCHAN(*cl, chans->getName()); continue ;}
 

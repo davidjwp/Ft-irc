@@ -43,9 +43,16 @@
 //}
 //const std::string roll::getName() const {return _name;}
 
+enum {
+	ONE = 1,
+	TWO = 2,
+};
+
 int	main(){
 	
-	
+	bool ok = false;
+
+	std::cout << TWO * ok << std::endl;
 	//roll pop("bloobly");
 
 	//OK obj(pop.getName(), pop);

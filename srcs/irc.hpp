@@ -30,7 +30,7 @@ enum Credentials{
 	USER = 4,
 	REG  = 8,
 	INV	 = 16,
-	OPER = 32,
+	OPER = 32,//not gonna use this 
 };
 
 #define USERLEN 32
@@ -64,14 +64,15 @@ private:
 	std::string	_name;
 
 
-	int	_limit;
+	size_t	_limit;
 	std::string _pass;
 	std::string _topic;
 	bool 	_invit_mode;
 	bool	_topic_mode;
 	bool	_key_mode;
+	bool	_op_mode;
 	std::map<const std::string, Client> _clients;
-	std::map<const std::string, int>	_operators;
+	std::map<const std::string, Client>	_operators;
 	std::vector<std::string> _banned;
 public:
 	Channel();
@@ -79,19 +80,21 @@ public:
 
 	const std::string getName() const;
 	bool getInvit() const;
-	int getLimit() const;
+	size_t getLimit() const;
 	const std::string getPass() const;
 	const std::string getTopic() const;
 	const std::map<const std::string, Client>::iterator getClientsIt();
-	const std::map<const std::string, Client> getClient();
-	const std::map<const std::string, int>::iterator getOperators();
-	const bool getInvitMode() const;
-	const bool getTopicMode() const;
-	const bool getKeyMode() const;
+	std::map<const std::string, Client>& getClient();
+	const std::map<const std::string, Client>::iterator getOperators();
+	bool getInvitMode() const;
+	bool getTopicMode() const;
+	bool getKeyMode() const;
+	bool getOpMode() const;
 
+	bool IsOperator(const Client&) const;
 	void setName(std::string);
 	void setInviteo(bool);
-	void setLimit(int);
+	void setLimit(size_t);
 	void setPass(std::string);
 	void setTopic(std::string);
 	void setTopicMode(bool);
@@ -176,8 +179,13 @@ public:
 	std::vector<pollfd>::iterator	getPollfd(int fd);
 	std::vector<std::string> split(std::string);
 	void	Disconnect_client(int);
-	Client getClientName(const std::string&);
+	Client& getClientName(const std::string&);
 	std::vector<Channel>::iterator getChanName(const std::string&); 
+	void ChangeOper(bool, std::string, Channel&, Client&);
+	void ChangePassword(bool, std::string, Client&, Channel&) const;
+	void Change_topic(bool, Client&, Channel&) const;
+	void ChangeInvito(bool, Client&, Channel&) const;
+	void ChangeLimit(bool, std::string, Channel&, Client&) const;
 
 	//getters
 
@@ -228,6 +236,8 @@ public:
 	static void ERR_ERRONEUSNICKNAME(const Client&, const std::string&);
 	//(433)
 	static void ERR_NICKNAMEINUSE(const Client&, const std::string&);
+	//(441)
+	static void ERR_USERNOTINCHANNEL(const Client&, const std::string, const Channel&);
 	//(442)
 	static void ERR_NOTONCHANNEL(const Client&, const std::string);
 	//(451)
@@ -254,6 +264,8 @@ public:
 	static void ERR_UMODEUNKNOWNFLAG(const Client&);
 	//(502)
 	static void ERR_USERSDONTMATCH(const Client&);
+	//(525)
+	static void ERR_INVALIDKEY(const Client&, const Channel&);
 };
 
 #endif
