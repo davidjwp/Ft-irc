@@ -305,7 +305,7 @@ void	Server::Proc_message(std::string message, int clfd) {
 	void	(Server::*commands[])(std::vector<std::string> msg_split, int clfd) = {
 		&Server::cNICK, &Server::cUSER, &Server::cPASS, &Server::cMODE, &Server::cJOIN, &Server::cPRIVMSG/*, 
 		&Server::cOPER, &Server::cPART, &Server::cNAMES, &Server::cKICK, 
-		&Server::cINVITE, &Server::cTOPIC*/};
+		&Server::cINVITE, &Server::cTOPIC*//*,&Server::WHO, &Server::PING*/};
 
 	for (int i = 0; i < 13; i++){
 		if (!msg_split[0].compare(ccoms[i])) {

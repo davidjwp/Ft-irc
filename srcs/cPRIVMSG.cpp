@@ -12,5 +12,16 @@ void Server::cPRIVMSG(std::vector<std::string> messages, int fd) {
 		msg = messages.begin() + 1;
 	else {Reply::ERR_NEEDMOREPARAMS(*cl, messages[0]); return ;}
 
+	try { std::vector<Channel>::iterator chan = getChanName(*msg);}
+	catch (std::exception& err) { Reply::ERR_NOTONCHANNEL(*cl, *msg); return ;}
+
+	std::string message = (++msg)->substr(1);
+	while (msg != messages.end()) {
+		message += " ";
+		message += *msg;
+		msg++;
+	}
+	if (message.find('\r') != std::string::npos) message.erase(message.find('\r'));
+
 	
 }

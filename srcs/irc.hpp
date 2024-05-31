@@ -233,6 +233,8 @@ public:
 	static void RPL_ENDOFNAMES(const Client&, std::string);
 	//(401)
 	static void ERR_NOSUCHNICK(const Client&, const std::string&);
+	//(403)
+	static void ERR_NOSUCHCHANNEL(const Client&, const std::string&);
 	//(431) 
 	static void ERR_NONICKNAMEGIVEN(const Client&);
 	//(432)

@@ -40,6 +40,9 @@ void	Reply::RPL_ENDOFNAMES(const Client& cl, std::string chan) {cl.reply(" 366 "
 //(401)
 void	Reply::ERR_NOSUCHNICK(const Client& cl, const std::string& nickorchan){cl.reply(" 401 " + cl.Get_nick() + " " + nickorchan + " :No such nick/channel");}
 
+//(403)
+void	Reply::ERR_NOSUCHCHANNEL(const Client& cl, const std::string& chan) {cl.reply(" 403 " + cl.Get_nick() + " " + chan + ":No such channel");}
+
 //(431)
 void	Reply::ERR_NONICKNAMEGIVEN(const Client& cl) { cl.reply(" 431 " + cl.Get_nick() + " :No nickname given");}
 
