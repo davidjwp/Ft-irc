@@ -20,7 +20,6 @@ void	Reply::RPL_CHANNELMODEIS(const Client& cl, const Channel& chan) {
 	cl.reply(msg);
 }
 
-
 //(332)
 void	Reply::RPL_TOPIC(const Client& cl, Channel chan) {cl.reply(" 332 " + cl.Get_nick() + " " + chan.getName() + " : " + chan.getTopic());}
 

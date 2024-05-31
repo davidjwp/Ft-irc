@@ -1,15 +1,13 @@
 #include "irc.hpp"
 
-//WORK IN PROGRESS
-
-//void	Reply::ERR_UNKNOWNMODE(const Client& cl){}
+//TO TEST
 
 static bool Check_mod_ops(
 	std::vector<std::string>::iterator msgs, 
 	std::vector<std::string>::iterator end,
 	std::vector<Client>::iterator cl) {
 	while (msgs != end) {
-		msgs->erase(msgs->find('\r'));
+		if (msgs->find('\r') != std::string::npos) msgs->erase(msgs->find('\r'));
 
 		if (msgs->size() != 2) {Reply::ERR_UMODEUNKNOWNFLAG(*cl); return false;}
 
@@ -24,7 +22,7 @@ static bool Check_mod_ops(
 
 bool	Server::OnChannel(Client& client, Channel& chan) const{
 	for (std::map<const std::string, Client>::iterator it = chan.getClient().begin(); it != chan.getClient().end(); it++)
-		if (it->second.Get_nick() == client.Get_nick())
+		if (it->second.Get_nick() == client.Get_nick()) return true;
 
 
 	
@@ -48,7 +46,7 @@ void Server::ChangePassword(bool mode, std::string newkey, Client& cl, Channel& 
 	chan.setKeyMode(mode);
 	if (mode) {
 		if (chan.getTopicMode() && chan.IsOperator(cl)) {Reply::ERR_CHANOPRIVSNEEDED(cl, chan.getName()); return ;}
-		newkey.erase(newkey.find('\r'));
+		if (newkey.find('\r') != std::string::npos) newkey.erase(newkey.find('\r'));
 		if (!newkey.size()) {Reply::ERR_INVALIDKEY(cl, chan); return ;}
 		chan.setPass(newkey);
 	}
@@ -71,7 +69,7 @@ void Server::ChangeOper(bool mode, std::string msg, Channel& chan, Client& cl){
 
 void Server::ChangeLimit(bool mode, std::string msg, Channel& chan, Client& cl) const{
 	if (chan.getOpMode() && !chan.IsOperator(cl)) {Reply::ERR_CHANOPRIVSNEEDED(cl, chan.getName()); return ;}
-	msg.erase(msg.find('\r'));
+	if (msg.find('\r') != std::string::npos) msg.erase(msg.find('\r'));
 	char *buff;
 	size_t limit = strtol(msg.c_str(), &buff, 10);
 	if (*buff != '\0')
@@ -84,7 +82,6 @@ void	Server::cMODE(std::vector<std::string> messages, int fd) {
 	std::vector<std::string>::iterator msg;
 
 	if (!(cl->Get_state() & REG)) {Reply::ERR_NOTREGISTERED(*cl); return ;}
-
 
 	if (messages.size() > 1)
 		msg = messages.begin() + 1;
@@ -112,12 +109,12 @@ void	Server::cMODE(std::vector<std::string> messages, int fd) {
 
 //	for channel MODE
 	try {
-		msg->erase(msg->find('\r'));
+		if (msg->find('\r') != std::string::npos) msg->erase(msg->find('\r'));
 		std::vector<Channel>::iterator chan = getChanName(*msg);
-		if (OnChannel(*cl, chan->getName())) {Reply::ERR_NOTONCHANNEL(*cl, chan->getName()); return ;}
+		if (!OnChannel(*cl, *chan)) {Reply::ERR_NOTONCHANNEL(*cl, chan->getName()); return ;}//HERE
 		if (chan->getOpMode() && chan->IsOperator(*cl)) {Reply::ERR_CHANOPRIVSNEEDED(*cl, chan->getName()); return ;}
 
-		if (msg + 1 == messages.end()) Reply::RPL_CHANNELMODEIS(*cl, *chan);
+		if (msg + 1 == messages.end()) {Reply::RPL_CHANNELMODEIS(*cl, *chan); return ;}
 		if (!Check_mod_ops(msg, messages.end(), cl)) return ;
 
 		while (++msg != messages.end()) {

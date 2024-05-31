@@ -101,7 +101,7 @@ public:
 	void setKeyMode(bool);
 	//void addClient();
 	//void setTopic(std::string);
-	bool IsBanned(const std::string&) const;
+	bool IsBanned(const std::string&);
 
 };
 

@@ -48,7 +48,7 @@ void Server::cJOIN(std::vector<std::string> messages, int fd){
 		try {chans = getChanName(*it);}
 		catch (std::exception& err){ 
 		//channel does not exist
-			it->erase(it->find('\r'));
+			if (it->find('\r') != std::string::npos) it->erase(it->find('\r'));
 			
 			if ( it->find(',') != std::string::npos || \
 				it->find('\a') != std::string::npos || \

@@ -30,8 +30,9 @@ void Channel::setTopic(std::string topic) {_topic = topic;}
 void Channel::setTopicMode(bool top) {_topic_mode = top;}
 void Channel::setKeyMode(bool key) {_key_mode = key;}
 
-bool Channel::IsBanned(const std::string& client) const{
-	if (_clients.find(client) != _clients.end()) return true;
+bool Channel::IsBanned(const std::string& client){
+	for (std::vector<std::string>::iterator it = _banned.begin(); it != _banned.end() ;it++)
+		if (client == *it) return true;
 	return false;
 }
 
@@ -296,7 +297,7 @@ void	Server::Proc_message(std::string message, int clfd) {
 	std::string 	tmp;
 	std::stringstream stream(message);
 	while (getline(stream, tmp, ' '))
-		if (tmp.size()) msg_split.push_back(tmp);
+		msg_split.push_back(tmp);
 
 	std::string  ccoms[] = {"NICK", "USER", "PASS", "MODE", "JOIN", "PRIVMSG", "OPER", \
 							"PART", "NAMES", "MODE", "KICK", "INVITE", "TOPIC"};
