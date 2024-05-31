@@ -80,7 +80,7 @@ void Server::cJOIN(std::vector<std::string> messages, int fd){
 			
 			Channel newchan(*it, *cl);
 			if (keys && keyIterator != chanKeys.end()) {
-				if (keyIterator->size()) newchan.setPass(*keyIterator);
+				if (keyIterator->size()) {newchan.setPass(*keyIterator); newchan.setKeyMode(true);}
 				keyIterator++;
 			}
 			cl->add_chan(newchan);

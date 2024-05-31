@@ -63,11 +63,13 @@ class Channel {
 private:
 	std::string	_name;
 
-	bool _inviteo;
 
 	int	_limit;
 	std::string _pass;
 	std::string _topic;
+	bool 	_invit_mode;
+	bool	_topic_mode;
+	bool	_key_mode;
 	std::map<const std::string, Client> _clients;
 	std::map<const std::string, int>	_operators;
 	std::vector<std::string> _banned;
@@ -83,12 +85,17 @@ public:
 	const std::map<const std::string, Client>::iterator getClientsIt();
 	const std::map<const std::string, Client> getClient();
 	const std::map<const std::string, int>::iterator getOperators();
+	const bool getInvitMode() const;
+	const bool getTopicMode() const;
+	const bool getKeyMode() const;
 
 	void setName(std::string);
 	void setInviteo(bool);
 	void setLimit(int);
 	void setPass(std::string);
 	void setTopic(std::string);
+	void setTopicMode(bool);
+	void setKeyMode(bool);
 	//void addClient();
 	//void setTopic(std::string);
 	bool IsBanned(const std::string&) const;

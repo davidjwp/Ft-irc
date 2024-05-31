@@ -4,25 +4,30 @@
 Channel::Channel(){}
 
 Channel::Channel(const std::string& name, Client client): 
-_name(name), _inviteo(false), _limit(-1), _pass(""), _topic("") {
+_name(name), _limit(-1), _pass(""), _topic(""), _invit_mode(false), _topic_mode(false), _key_mode(false) {
 	_clients[client.Get_nick()] = client;
 	_operators[client.Get_nick()] = client.Get_clfd();
 }
 
 const std::string Channel::getName() const {return _name;}
-bool Channel::getInvit() const {return _inviteo;}
+bool Channel::getInvit() const {return _invit_mode;}
 int Channel::getLimit() const {return _limit;}
 const std::string Channel::getPass() const {return _pass;}
 const std::string Channel::getTopic() const {return _topic;}
 const std::map<const std::string, Client>::iterator Channel::getClientsIt() { return _clients.begin();}
 const std::map<const std::string, Client> Channel::getClient() {return _clients;}
 const std::map<const std::string, int>::iterator Channel::getOperators() { return _operators.begin();}
+const bool Channel::getInvitMode() const {return _invit_mode;}
+const bool Channel::getTopicMode() const {return _topic_mode;}
+const bool Channel::getKeyMode() const {return _key_mode;}
 
 void Channel::setName(std::string name) {_name = name;}
-void Channel::setInviteo(bool inv) {_inviteo = inv;}
+void Channel::setInviteo(bool inv) {_invit_mode = inv;}
 void Channel::setLimit(int limit) {_limit = limit;}
 void Channel::setPass(std::string pass) {_pass = pass;}
 void Channel::setTopic(std::string topic) {_topic = topic;}
+void Channel::setTopicMode(bool top) {_topic_mode = top;}
+void Channel::setKeyMode(bool key) {_key_mode = key;}
 
 bool Channel::IsBanned(const std::string& client) const{
 	if (_clients.find(client) != _clients.end()) return true;

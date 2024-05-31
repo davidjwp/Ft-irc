@@ -40,6 +40,21 @@ static bool Check_mod_ops(
 	return true;
 }
 
+void  Change_topic(bool top, Client cl, Channel& chan) {
+	if (chan.getTopicMode() && !(cl.Get_state() & OPER)) {Reply::ERR_CHANOPRIVSNEEDED(cl, chan.getName()); return ;}
+	else chan.setTopicMode(top);
+}
+
+const bool	OnChannel(Client client, std::string channel) {
+	for (std::vector<Channel>::iterator it = client.Get_chan().begin(); it != client.Get_chan().end(); it++)
+		if (it->getName() == channel) return true;
+	return false;
+}
+
+void ChangePassword(Client cl, Channel& chan) {
+	if (!(cl.Get_state() & OPER)) {Reply::ERR_CHANOPRIVSNEEDED(cl, chan.getName()); return ;}
+	if (chan.getKeyMode()) {}
+}
 
 void	Server::cMODE(std::vector<std::string> messages, int fd) {
 	std::vector<Client>::iterator cl = getClientit(fd);
@@ -75,8 +90,8 @@ void	Server::cMODE(std::vector<std::string> messages, int fd) {
 //	for channel MODE
 	try {
 		std::vector<Channel>::iterator chan = getChanName(*msg);
-		if (cl->Get_chan() != chan->getName()) {Reply::ERR_NOTONCHANNEL(*cl); return ;}
-		if (!(cl->Get_state() & OPER)) {Reply::ERR_CHANOPRIVSNEEDED(*cl); return ;}
+		if (OnChannel(*cl, chan->getName())) {Reply::ERR_NOTONCHANNEL(*cl, chan->getName()); return ;}
+		//if (!(cl->Get_state() & OPER)) {Reply::ERR_CHANOPRIVSNEEDED(*cl, chan->getName()); return ;}depends on the modifications asked
 
 		if (!Check_mod_ops(msg, messages.end(), cl)) return ;
 
@@ -86,10 +101,13 @@ void	Server::cMODE(std::vector<std::string> messages, int fd) {
 			switch (mod) {
 				case ('i') :
 					msg->at(0) == '+' ? chan->setInviteo(true) : chan->setInviteo(false);
-				//case ('t') :
-				//	msg->at(0) == '+' ? chan : ; not sure what this is yet
+				case ('t') :
+					msg->at(0) == '+' ? Change_topic(true, *cl, *chan) : Change_topic(false, *cl, *chan);
 				case ('k') :
-					msg->at(0) == '+' ? chan : ;
+				{
+					msg->at(0) == '+' ? ChangePassword() : ChangePassword();
+
+				}
 				case ('o') :
 					msg->at(0) == '+' ? : ;
 				case ('l') :
