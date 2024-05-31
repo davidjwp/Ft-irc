@@ -1,29 +1,6 @@
 #include "irc.hpp"
 
 //WORK IN PROGRESS
-void	Reply::ERR_BADCHANMASK(const Client& cl, const std::string& chan) {cl.reply(" 476 " + chan + " :Bad Channel Mask");}
-
-void	Reply::RPL_TOPIC(const Client& cl, Channel chan) {cl.reply(" 332 " + cl.Get_nick() + " " + chan.getName() + " : " + chan.getTopic());}
-
-void	Reply::RPL_NAMREPLY(const Client& cl, Channel chan) {
-	std::string msg = " 353 " + cl.Get_nick() + " = " + chan.getName() + " :";
-	std::string chan_clients;
-	unsigned int size = chan.getClient().size();
-	std::map<const std::string, Client>::iterator it = chan.getClientsIt();
-	while (size--)
-		chan_clients += (it++)->second.Get_nick() + " ";
-	cl.reply(msg + chan_clients);
-}
-
-void	Reply::RPL_ENDOFNAMES(const Client& cl, std::string chan) {cl.reply(" 366 " + cl.Get_nick() + " " + chan + " :End of /NAMES list");}
-
-void	Reply::ERR_INVITEONLYCHAN(const Client& cl, std::string chan) {cl.reply(" 473 " + cl.Get_nick() + " " + chan + " :Cannot join channel (+i)");}
-
-void	Reply::ERR_CHANNELISFULL(const Client& cl, std::string chan) {cl.reply(" 471 " + cl.Get_nick() + " " + chan + " :Cannot join channel (+l)");}
-
-void	Reply::ERR_BADCHANNELKEY(const Client& cl, std::string chan) {cl.reply(" 475 " + cl.Get_nick() + " " + chan + " :Cannot join channel (+k)");}
-
-void	Reply::ERR_BANNEDFROMCHAN(const Client& cl, std::string chan) {cl.reply(" 474 " + cl.Get_nick() + " " + chan + " :Cannot join channel (+b)");}
 
 static int ChanClientAmount(Channel chan) {
 	unsigned int limit = 0;
@@ -71,7 +48,7 @@ void Server::cJOIN(std::vector<std::string> messages, int fd){
 		try {chans = getChanName(*it);}
 		catch (std::exception& err){ 
 		//channel does not exist
-			if (it->find('\r') != std::string::npos) it->erase(it->find('\r'));
+			it->erase(it->find('\r'));
 			
 			if ( it->find(',') != std::string::npos || \
 				it->find('\a') != std::string::npos || \

@@ -64,7 +64,7 @@ private:
 	std::string	_name;
 
 
-	size_t	_limit;
+	int	_limit;
 	std::string _pass;
 	std::string _topic;
 	bool 	_invit_mode;
@@ -80,7 +80,7 @@ public:
 
 	const std::string getName() const;
 	bool getInvit() const;
-	size_t getLimit() const;
+	int getLimit() const;
 	const std::string getPass() const;
 	const std::string getTopic() const;
 	const std::map<const std::string, Client>::iterator getClientsIt();
@@ -94,7 +94,7 @@ public:
 	bool IsOperator(const Client&) const;
 	void setName(std::string);
 	void setInviteo(bool);
-	void setLimit(size_t);
+	void setLimit(int);
 	void setPass(std::string);
 	void setTopic(std::string);
 	void setTopicMode(bool);
@@ -186,6 +186,7 @@ public:
 	void Change_topic(bool, Client&, Channel&) const;
 	void ChangeInvito(bool, Client&, Channel&) const;
 	void ChangeLimit(bool, std::string, Channel&, Client&) const;
+	bool OnChannel(Client&, Channel&) const;
 
 	//getters
 
@@ -222,6 +223,8 @@ public:
 	static void RPL_WELCOME(const Client&);
 	//(221)
 	static void RPL_UMODEIS(const Client&);
+	//(324)
+	static void RPL_CHANNELMODEIS(const Client&, const Channel&);
 	//(332)
 	static void RPL_TOPIC(const Client&, Channel);
 	//(353)

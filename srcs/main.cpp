@@ -11,7 +11,7 @@ _name(name), _limit(-1), _pass(""), _topic(""), _invit_mode(false), _topic_mode(
 
 const std::string Channel::getName() const {return _name;}
 bool Channel::getInvit() const {return _invit_mode;}
-size_t Channel::getLimit() const {return _limit;}
+int Channel::getLimit() const {return _limit;}
 const std::string Channel::getPass() const {return _pass;}
 const std::string Channel::getTopic() const {return _topic;}
 const std::map<const std::string, Client>::iterator Channel::getClientsIt() { return _clients.begin();}
@@ -24,7 +24,7 @@ bool Channel::getOpMode() const {return _op_mode;}
 
 void Channel::setName(std::string name) {_name = name;}
 void Channel::setInviteo(bool inv) {_invit_mode = inv;}
-void Channel::setLimit(size_t limit) {_limit = limit;}
+void Channel::setLimit(int limit) {_limit = limit;}
 void Channel::setPass(std::string pass) {_pass = pass;}
 void Channel::setTopic(std::string topic) {_topic = topic;}
 void Channel::setTopicMode(bool top) {_topic_mode = top;}
@@ -41,9 +41,7 @@ bool Channel::IsOperator(const Client& cl) const {
 	return false;
 }
 
-//REPLIES######################################################################################################################
 bool stop_server = false;
-void Reply::RPL_WELCOME(const Client& cl){ cl.reply(" 001 " + cl.Get_nick() + " :Welcome to the Internet Relay Network, " + cl.Get_nick());}
 
 //CLIENT IMPLEMENTATION#########################################################################################################
 

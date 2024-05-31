@@ -2,29 +2,7 @@
 
 //WORK IN PROGRESS
 
-void	Reply::ERR_NOSUCHNICK(const Client& cl, const std::string& nickorchan){cl.reply(" 401 " + cl.Get_nick() + " " + nickorchan + " :No such nick/channel");}
-
-void	Reply::ERR_USERSDONTMATCH(const Client& cl) {cl.reply(" 501 " + cl.Get_nick() + " :Cant change mode for other users");}
-
-void	Reply::ERR_NOTREGISTERED(const Client& cl) {cl.reply(" 451 " + cl.Get_nick() + " :You have not registered");}
-
-void	Reply::ERR_NOTONCHANNEL(const Client& cl, const std::string chan) {cl.reply(" 442 " + cl.Get_nick() + " " + chan + " :You're not on that channel");}
-
-void	Reply::ERR_CHANOPRIVSNEEDED(const Client& cl, const std::string chan) {cl.reply(" 482 " + cl.Get_nick() + " " + chan + " :You're not channel operator");}
-
 //void	Reply::ERR_UNKNOWNMODE(const Client& cl){}
-
-void	Reply::ERR_USERNOTINCHANNEL(const Client& cl, const std::string nick, const Channel& chan) {cl.reply(" 441 " + cl.Get_nick() + " " + nick + " " + chan.getName() + " :They aren't on that channel");}
-
-void	Reply::ERR_UMODEUNKNOWNFLAG(const Client& cl) {cl.reply(" 501 " + cl.Get_nick() + " :Unknown MODE flag");}
-
-void	Reply::RPL_UMODEIS(const Client& cl) {
-	std::string modes;
-	if (cl.Get_state() & INV) modes += " +i ";
-	cl.reply(" 221 " + cl.Get_nick() + " :" + modes);
-}
-
-void	Reply::ERR_INVALIDKEY(const Client& cl, const Channel& chan) {cl.reply(" 525 " + cl.Get_nick() + " " + chan.getName() + " :Key is not well-formed");}
 
 static bool Check_mod_ops(
 	std::vector<std::string>::iterator msgs, 
@@ -44,9 +22,14 @@ static bool Check_mod_ops(
 	return true;
 }
 
-bool	OnChannel(Client client, std::string channel){
-	for (std::vector<Channel>::iterator it = client.Get_chan().begin(); it != client.Get_chan().end(); it++)
-		if (it->getName() == channel) return true;
+bool	Server::OnChannel(Client& client, Channel& chan) const{
+	for (std::map<const std::string, Client>::iterator it = chan.getClient().begin(); it != chan.getClient().end(); it++)
+		if (it->second.Get_nick() == client.Get_nick())
+
+
+	
+	//for (std::vector<Channel>::iterator it = chan.begin(); it != client.Get_chan().end(); it++)
+	//	if (it->getName() == channel) return true;
 	return false;
 }
 
@@ -129,10 +112,12 @@ void	Server::cMODE(std::vector<std::string> messages, int fd) {
 
 //	for channel MODE
 	try {
+		msg->erase(msg->find('\r'));
 		std::vector<Channel>::iterator chan = getChanName(*msg);
 		if (OnChannel(*cl, chan->getName())) {Reply::ERR_NOTONCHANNEL(*cl, chan->getName()); return ;}
 		if (chan->getOpMode() && chan->IsOperator(*cl)) {Reply::ERR_CHANOPRIVSNEEDED(*cl, chan->getName()); return ;}
 
+		if (msg + 1 == messages.end()) Reply::RPL_CHANNELMODEIS(*cl, *chan);
 		if (!Check_mod_ops(msg, messages.end(), cl)) return ;
 
 		while (++msg != messages.end()) {
