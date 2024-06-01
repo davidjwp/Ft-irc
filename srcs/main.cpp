@@ -263,6 +263,28 @@ std::string	Server::Get_message(int clfd) {
 	return msg;
 }
 
+//std::string	Server::Get_message(int clfd) {
+//	std::string	msg;
+//	char	buf[256];
+//	bzero(buf, 256);
+//	std::vector<Client>::iterator client = getClientit(clfd);
+//	msg = client->Get_msg();
+
+//	while (!std::strstr(buf, "\n")){
+//		bzero(buf,256);
+//		int n = 0;
+//		if ((n = recv(clfd, buf, 256, MSG_DONTWAIT)) < 0){
+//			if (errno != EWOULDBLOCK) throw Error("Error: Server::Get_message recv blocking error.");
+//			return "";
+//		}
+//		else if (n == 0) throw Error("Error: Server::Get_message client disconnect.");
+//		client->addMsg(buf);
+//		msg += buf;
+//	}
+//	client->Set_msg("");
+//	return msg;
+//}
+
 std::vector<std::string> Server::split(std::string msg) {
 	std::vector<std::string> cmd;
 	std::stringstream str(msg);
@@ -434,27 +456,6 @@ int	main(int ac, char **av) {
 
 //IMPLEMENT PING TO PREVENT IRSSI FROM RECONNECTING 
 
-//std::string	Server::Get_message(int clfd) {
-//	std::string	msg;
-//	char	buf[BUFFER_SIZE];
-//	bzero(buf, BUFFER_SIZE);
-//	std::vector<Client>::iterator client = getClient(clfd);
-//	msg = client->Get_msg();
-
-//	while (!std::memchr(buf, '\n', BUFFER_SIZE)){
-//		bzero(buf,BUFFER_SIZE);
-//		int n = 0;
-//		if ((n = recv(clfd, buf, BUFFER_SIZE, MSG_DONTWAIT)) < 0){
-//			if (errno != EWOULDBLOCK) throw Error("Error: Server::Get_message recv blocking error.");
-//			return "";
-//		}
-//		else if (n == 0) throw Error("Error: Server::Get_message client disconnect.");
-//		client->addMsg(buf);
-//		msg += buf;
-//	}
-//	client->Set_msg("");
-//	return msg;
-//}
 
 //watch out for channel names, nicknames, username and all changes to clients in the PROTOCOL
 
