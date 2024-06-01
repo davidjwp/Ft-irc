@@ -62,8 +62,9 @@ void Server::cJOIN(std::vector<std::string> messages, int fd){
 			}
 			AddChannel(newchan);
 			cl->add_chan(newchan);
-			cl->Get_chan();
-			cl->reply(" Join :" + *it);//channel join reply
+			newchan.Broadcast(std::string(cl->makeCLname() + " Join :" + *it));
+			//cl->Get_chan(); idk
+			//cl->reply(" Join :" + *it);//channel join reply
 			Reply::RPL_TOPIC(*cl, newchan);
 			Reply::RPL_NAMREPLY (*cl, newchan);
 			Reply::RPL_ENDOFNAMES(*cl, newchan.getName());
@@ -85,6 +86,8 @@ void Server::cJOIN(std::vector<std::string> messages, int fd){
 		}
 		if (chans->getClient().find(cl->Get_nick()) == chans->getClient().end()) chans->AddClient(*cl);
 		cl->add_chan(*chans);
+		chans->Broadcast(std::string( cl->makeCLname() + " Join :" + *it));
+		//cl->reply(" Join :" + *it);
 		Reply::RPL_TOPIC(*cl, *chans);
 		Reply::RPL_NAMREPLY (*cl, *chans);
 		Reply::RPL_ENDOFNAMES(*cl, chans->getName());

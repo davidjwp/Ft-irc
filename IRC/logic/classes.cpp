@@ -6,7 +6,7 @@
 /*   By: djacobs <djacobs@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/01 12:37:14 by prossi            #+#    #+#             */
-/*   Updated: 2024/05/29 17:39:37 by djacobs          ###   ########.fr       */
+/*   Updated: 2024/06/01 15:48:46 by djacobs          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@
 
 
 Server::Server(int port, const String &pass)
-	: _host("127.0.0.1"), _password(pass), _operPassword("operator's password"), _port(port) 
+	: _host("127.0.0.1"), _password(pass), _operPassword("operator's_password"), _port(port) 
 {
 	_sock = createSocket();
 }

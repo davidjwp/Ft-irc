@@ -103,8 +103,9 @@ public:
 	//void addClient();
 	//void setTopic(std::string);
 	bool IsBanned(const std::string&);
-	void Broadcast(std::string&) const;
-
+	void Broadcast(std::string, int) const;
+	void Broadcast(std::string) const;
+	void EraseClient(Client&);
 };
 
 class Client {
@@ -131,7 +132,7 @@ public:
 	//getters
 	const std::string Get_host() const;
 	const std::string Get_nick() const;
-	std::vector<Channel> Get_chan() const;
+	std::vector<Channel>& Get_chan();
 	const std::string Get_user() const;
 	const std::string Get_msg() const;
 	const std::string Get_realname() const;
@@ -166,7 +167,6 @@ private:
 	std::vector<pollfd> _pollfds;
 	std::vector<Client> _clients;
 	std::vector<Channel> _channels;
-
 public:
 	~Server();
 	Server(int port, const std::string &pass);
@@ -190,6 +190,7 @@ public:
 	void ChangeLimit(bool, std::string, Channel&, Client&) const;
 	bool OnChannel(Client&, Channel&) const;
 	void AddChannel(Channel&);
+	Client& GetClient(int);
 
 	//getters
 
@@ -202,8 +203,8 @@ public:
 	void	cPASS(std::vector<std::string>, int);
 	void	cPRIVMSG(std::vector<std::string>, int);
 	void	cJOIN(std::vector<std::string>, int);
-	//void	cWHO(std::vector<std::string>, int);
-	//void	cPING(std::vector<std::string>, int);
+	void	cWHO(std::vector<std::string>, int);
+	void	cPING(std::vector<std::string>, int);
 	void	cOPER(std::vector<std::string>, int);
 	void	cPART(std::vector<std::string>, int);
 	void	cNAMES(std::vector<std::string>, int);
@@ -229,13 +230,17 @@ public:
 	//(324)
 	static void RPL_CHANNELMODEIS(const Client&, const Channel&);
 	//(332)
-	static void RPL_TOPIC(const Client&, Channel);
+	static void RPL_TOPIC(const Client&, Channel&);
 	//(353)
-	static void RPL_NAMREPLY(const Client&, Channel);
+	static void RPL_NAMREPLY(const Client&, Channel&);
 	//(366)
 	static void RPL_ENDOFNAMES(const Client&, std::string);
+	//(381)
+	static void RPL_YOUREOPER(const Client&);
 	//(401)
 	static void ERR_NOSUCHNICK(const Client&, const std::string&);
+	//(402)
+	static void	ERR_NOSUCHSERVER(const Client&, const std::string&);
 	//(403)
 	static void ERR_NOSUCHCHANNEL(const Client&, const std::string&);
 	//(431) 

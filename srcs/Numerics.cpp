@@ -21,24 +21,30 @@ void	Reply::RPL_CHANNELMODEIS(const Client& cl, const Channel& chan) {
 }
 
 //(332)
-void	Reply::RPL_TOPIC(const Client& cl, Channel chan) {cl.reply(" 332 " + cl.Get_nick() + " " + chan.getName() + " : " + chan.getTopic());}
+void	Reply::RPL_TOPIC(const Client& cl, Channel& chan) {cl.reply(" 332 " + cl.Get_nick() + " " + chan.getName() + " " + chan.getTopic());}
 
 //(353)
-void	Reply::RPL_NAMREPLY(const Client& cl, Channel chan) {
+void	Reply::RPL_NAMREPLY(const Client& cl, Channel& chan) {
 	std::string msg = " 353 " + cl.Get_nick() + " = " + chan.getName() + " :";
 	std::string chan_clients;
 	unsigned int size = chan.getClient().size();
 	std::map<const std::string, Client>::iterator it = chan.getClientsIt();
 	while (size--)
-		chan_clients += (it++)->second.Get_nick() + " ";
+		chan_clients += "@" + (it++)->second.Get_nick() + " ";
 	cl.reply(msg + chan_clients);
 }
 
 //(366)
-void	Reply::RPL_ENDOFNAMES(const Client& cl, std::string chan) {cl.reply(" 366 " + cl.Get_nick() + " " + chan + " :End of /NAMES list");}
+void	Reply::RPL_ENDOFNAMES(const Client& cl, std::string chan) {cl.reply(" 366 " + cl.Get_nick() + " " + chan + " :End of /NAMES list.");}
+
+//(381)
+void	Reply::RPL_YOUREOPER(const Client& cl) {cl.reply(" 381 " + cl.Get_nick() + " :You are now an IRC operator");}
 
 //(401)
 void	Reply::ERR_NOSUCHNICK(const Client& cl, const std::string& nickorchan){cl.reply(" 401 " + cl.Get_nick() + " " + nickorchan + " :No such nick/channel");}
+
+//(402)
+void	Reply::ERR_NOSUCHSERVER(const Client& cl, const std::string& server) {cl.reply(" 402 " + cl.Get_nick() + " " + server + " :No such server");}
 
 //(403)
 void	Reply::ERR_NOSUCHCHANNEL(const Client& cl, const std::string& chan) {cl.reply(" 403 " + cl.Get_nick() + " " + chan + ":No such channel");}

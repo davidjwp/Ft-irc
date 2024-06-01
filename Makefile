@@ -14,6 +14,10 @@ SRCS    = srcs/Numerics.cpp \
 		srcs/cMODE.cpp \
 		srcs/cJOIN.cpp \
 		srcs/cPRIVMSG.cpp \
+		srcs/cPING.cpp \
+		srcs/cOPER.cpp \
+		srcs/cPART.cpp \
+		srcs/cNAMES.cpp \
 
 OBJS_DIR = objs/
 OBJS    = $(SRCS:srcs/%.cpp=$(OBJS_DIR)%.o)

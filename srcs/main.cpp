@@ -45,12 +45,30 @@ bool Channel::IsOperator(const Client& cl) const {
 	return false;
 }
 
-void Channel::Broadcast(std::string& msg) const {
+void Channel::Broadcast(std::string msg, int fd) const {
+	msg += "\r\n";
+	for (std::map<const std::string, Client>::const_iterator it = _clients.begin(); it != _clients.end(); it++)
+		if (fd != it->second.Get_clfd() && send(it->second.Get_clfd(), msg.c_str(), msg.size(), 0) == -1) throw Error("Error: Channel::Broadcast send failed.");
+}
+
+void Channel::Broadcast(std::string msg) const {
 	msg += "\r\n";
 	for (std::map<const std::string, Client>::const_iterator it = _clients.begin(); it != _clients.end(); it++)
 		if (send(it->second.Get_clfd(), msg.c_str(), msg.size(), 0) == -1) throw Error("Error: Channel::Broadcast send failed.");
 }
 
+void Channel::EraseClient(Client& cl) {
+	for(std::map<const std::string, Client>::iterator it = _clients.begin(); it != _clients.end(); it++)
+	{
+		if (it->second.Get_clfd() == cl.Get_clfd()) {
+			std::cout << colstring(Byellow, std::string("Erasing client ...")) << std::endl;
+			Broadcast(cl.makeCLname() + " PART :" + _name);
+			_clients.erase(it);
+			return ;
+		}
+	}
+	std::cout << colstring(Byellow, std::string("not really erasing client")) << _clients.size() << std::endl;
+}
 
 //CLIENT IMPLEMENTATION#########################################################################################################
 
@@ -80,7 +98,7 @@ Client::~Client(){}
 
 const std::string Client::Get_host() const { return _hostname;}
 const std::string Client::Get_nick() const { return _nickname;}
-std::vector<Channel> Client::Get_chan() const { return _channels;}
+std::vector<Channel>& Client::Get_chan() { return _channels;}
 const std::string Client::Get_user() const { return _username;}
 const std::string	Client::Get_msg() const { return _msg;}
 const std::string Client::Get_realname() const { return _realname;}
@@ -119,8 +137,8 @@ void Client::isRegistered() {
 const std::string Client::makeCLname() const {
 	std::string name(":");
 
-	if (_state & USER) name += _username;
-	if (_state & NICK) name += "!" + _nickname;
+	if (_state & USER) name += _nickname;
+	if (_state & NICK) name += "!" + _username;
 	return name += "@localhost";
 }
 
@@ -255,21 +273,31 @@ std::vector<std::string> Server::split(std::string msg) {
 	while (std::getline(str, tmp, '\n')) 
 	{
 		cmd.push_back(tmp);
-		std::cout << cmd.at(i++) << std::endl;//this might is where the output comes from
+		std::cout << cmd.at(i++) << std::endl;//this is where the output comes from
 	}
 	return cmd;
 }
 
 void	Server::Disconnect_client(int clfd) {
-	std::vector<Client>::iterator cl = getClientit(clfd);
-	std::vector<pollfd>::iterator pfd = getPollfd(clfd);
+	Client cl = GetClient(clfd);
+
+	for (std::vector<Channel>::iterator it = _channels.begin(); it != _channels.end(); it++) {
+		it->EraseClient(cl);
+		if (it->getClient().empty())
+			it = _channels.erase(it);
+		else
+			it++;
+	}
+	std::cout << colstring(Byellow, std::string("Client erased from channels")) << std::endl;
+
+	_clients.erase(getClientit(clfd));
+	_pollfds.erase(getPollfd(clfd));
 
 	std::cout << colstring(Bcyan, std::string("User: ")) << 
-	colstring(Bblue, cl->Get_user()) << 
+	colstring(Bblue, cl.Get_user()) << 
 	colstring(Bcyan, std::string(" Successfully Disconnected !")) << std::endl;
-	close(cl->Get_clfd());
-	_pollfds.erase(pfd);
-	_clients.erase(cl);
+
+	close(clfd);
 }
 
 //std::vector<std::string>
@@ -292,7 +320,7 @@ void	Server::Client_messages(int current_clfd) {
 //JOIN, OPER, KICK, MODE, TOPIC, NAMES, OPER, PART, INVITE
 
 //User specific commands
-//NICK, USER, PASS
+//NICK, USER, PASS, PING
 void	Server::Proc_message(std::string message, int clfd) {
 
 	std::vector<std::string> msg_split;
@@ -308,19 +336,26 @@ void	Server::Proc_message(std::string message, int clfd) {
 		msg_split.push_back(tmp);
 
 	std::string  ccoms[] = {"NICK", "USER", "PASS", "MODE", "JOIN", "PRIVMSG", "OPER", \
-							"PART", "NAMES", "MODE", "KICK", "INVITE", "TOPIC"};
+							"PART", "NAMES", /*"KICK", "INVITE", "TOPIC",*/ "PING"};
 	
 	void	(Server::*commands[])(std::vector<std::string> msg_split, int clfd) = {
-		&Server::cNICK, &Server::cUSER, &Server::cPASS, &Server::cMODE, &Server::cJOIN, &Server::cPRIVMSG/*, 
-		&Server::cOPER, &Server::cPART, &Server::cNAMES, &Server::cKICK, 
-		&Server::cINVITE, &Server::cTOPIC*//*,&Server::WHO, &Server::PING*/};
+		&Server::cNICK, &Server::cUSER, &Server::cPASS, &Server::cMODE, &Server::cJOIN, &Server::cPRIVMSG, 
+		&Server::cOPER, &Server::cPART, &Server::cNAMES/*, &Server::cKICK, 
+		&Server::cINVITE, &Server::cTOPIC*/, &Server::cPING};
 
-	for (int i = 0; i < 13; i++){
+	for (int i = 0; i < 14; i++){
 		if (!msg_split[0].compare(ccoms[i])) {
 			(this->*commands[i])(msg_split, clfd); 
 			break;
 		}
 	}
+}
+
+Client& Server::GetClient(int fd) {
+	for (std::vector<Client>::iterator it = _clients.begin(); it != _clients.end(); it++)
+		if (it->Get_clfd() == fd) return *it;
+	throw Error("Error: Server::GetClient can't find client fd in server _clients.");
+	return _clients.at(0);
 }
 
 std::vector<pollfd>::iterator Server::getPollfd(int fd){
