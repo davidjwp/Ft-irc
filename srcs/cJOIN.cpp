@@ -45,7 +45,7 @@ void Server::cJOIN(std::vector<std::string> messages, int fd){
 		if (it->at(0) != '#') { Reply::ERR_BADCHANMASK(*cl, *msg); return ;}
 
 		std::vector<Channel>::iterator chans; 
-		try {chans = getChanName(*it);}
+		try {chans = getChanName(*it);/*findChan(*it)*/}
 		catch (std::exception& err){ 
 		//channel does not exist
 			if (it->find('\r') != std::string::npos) it->erase(it->find('\r'));
@@ -60,7 +60,9 @@ void Server::cJOIN(std::vector<std::string> messages, int fd){
 				if (keyIterator->size()) {newchan.setPass(*keyIterator); newchan.setKeyMode(true);}
 				keyIterator++;
 			}
+			AddChannel(newchan);
 			cl->add_chan(newchan);
+			cl->Get_chan();
 			cl->reply(" Join :" + *it);//channel join reply
 			Reply::RPL_TOPIC(*cl, newchan);
 			Reply::RPL_NAMREPLY (*cl, newchan);
@@ -81,6 +83,7 @@ void Server::cJOIN(std::vector<std::string> messages, int fd){
 			if (keyIterator->size()) chans->setPass(*keyIterator);
 			keyIterator++;
 		}
+		if (chans->getClient().find(cl->Get_nick()) == chans->getClient().end()) chans->AddClient(*cl);
 		cl->add_chan(*chans);
 		Reply::RPL_TOPIC(*cl, *chans);
 		Reply::RPL_NAMREPLY (*cl, *chans);

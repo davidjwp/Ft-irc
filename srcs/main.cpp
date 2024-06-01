@@ -1,5 +1,7 @@
 #include "irc.hpp"
 
+bool stop_server = false;
+
 //CHANNEL########################################################################################################################
 Channel::Channel(){}
 
@@ -22,6 +24,7 @@ bool Channel::getTopicMode() const {return _topic_mode;}
 bool Channel::getKeyMode() const {return _key_mode;}
 bool Channel::getOpMode() const {return _op_mode;}
 
+void Channel::AddClient(Client& client) {_clients[client.Get_nick()] = client;}
 void Channel::setName(std::string name) {_name = name;}
 void Channel::setInviteo(bool inv) {_invit_mode = inv;}
 void Channel::setLimit(int limit) {_limit = limit;}
@@ -42,7 +45,12 @@ bool Channel::IsOperator(const Client& cl) const {
 	return false;
 }
 
-bool stop_server = false;
+void Channel::Broadcast(std::string& msg) const {
+	msg += "\r\n";
+	for (std::map<const std::string, Client>::const_iterator it = _clients.begin(); it != _clients.end(); it++)
+		if (send(it->second.Get_clfd(), msg.c_str(), msg.size(), 0) == -1) throw Error("Error: Channel::Broadcast send failed.");
+}
+
 
 //CLIENT IMPLEMENTATION#########################################################################################################
 
@@ -83,7 +91,7 @@ int	Client::Get_clfd() const { return _clfd;}
 
 void Client::Set_host(std::string host){ _hostname = host;}
 void Client::Set_nick(std::string nick){ if (!(_state & NICK)) _state += NICK; _nickname = nick;}
-void Client::add_chan(Channel chan){ _channels.push_back(chan);}
+void Client::add_chan(Channel& chan){ _channels.push_back(chan);}
 void Client::Set_user(std::string user){ if (!(_state & USER)) _state += USER; _username = user;}
 void Client::Set_msg(std::string msg){ _msg = msg;}
 void Client::Set_realname(std::string realn){ _realname = realn;}
@@ -258,7 +266,7 @@ void	Server::Disconnect_client(int clfd) {
 
 	std::cout << colstring(Bcyan, std::string("User: ")) << 
 	colstring(Bblue, cl->Get_user()) << 
-	colstring(Bcyan, std::string("Successfully Disconnected !")) << std::endl;
+	colstring(Bcyan, std::string(" Successfully Disconnected !")) << std::endl;
 	close(cl->Get_clfd());
 	_pollfds.erase(pfd);
 	_clients.erase(cl);
@@ -346,6 +354,8 @@ std::vector<Channel>::iterator Server::getChanName(const std::string& chan){
 		if (it->getName() == chan) return it;
 	throw Error ("Error: Server::getChanName can't find channel.");
 }
+
+void Server::AddChannel(Channel& chan) {_channels.push_back(chan);}
 
 //GETTERS
 

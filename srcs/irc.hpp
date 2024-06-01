@@ -91,6 +91,7 @@ public:
 	bool getKeyMode() const;
 	bool getOpMode() const;
 
+	void AddClient(Client&);
 	bool IsOperator(const Client&) const;
 	void setName(std::string);
 	void setInviteo(bool);
@@ -102,6 +103,7 @@ public:
 	//void addClient();
 	//void setTopic(std::string);
 	bool IsBanned(const std::string&);
+	void Broadcast(std::string&) const;
 
 };
 
@@ -139,7 +141,7 @@ public:
 	//setters
 	void	Set_host(std::string);
 	void	Set_nick(std::string);
-	void	add_chan(Channel);
+	void	add_chan(Channel&);
 	void	Set_chan(std::string);
 	void	Set_user(std::string);
 	void	Set_msg(std::string);
@@ -187,6 +189,7 @@ public:
 	void ChangeInvito(bool, Client&, Channel&) const;
 	void ChangeLimit(bool, std::string, Channel&, Client&) const;
 	bool OnChannel(Client&, Channel&) const;
+	void AddChannel(Channel&);
 
 	//getters
 
