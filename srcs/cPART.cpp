@@ -4,7 +4,7 @@ void Server::cPART(std::vector<std::string> messages, int fd) {
 	std::vector<Client>::iterator cl = getClientit(fd);
 	std::vector<std::string>::iterator msg;
 
-	if (messages.size() > 2)
+	if (messages.size() > 1)
 		msg = messages.begin() + 1;
 	else {Reply::ERR_NEEDMOREPARAMS(*cl, messages[0]); return ;}
 
@@ -16,9 +16,13 @@ void Server::cPART(std::vector<std::string> messages, int fd) {
 		try {
 			std::vector<Channel>::iterator chan = getChanName(*msg);
 
-			std::vector<Channel> client_chan = cl->Get_chan();
-			for (std::vector<Channel>::iterator it = client_chan.begin(); it != client_chan.end(); it++)
-				if (it->getName() == *msg) client_chan.erase(it);
+			std::vector<Channel>::iterator it = cl->Get_chan().begin();
+			while (it != cl->Get_chan().end()) {
+				if (it->getName() == chan->getName()) break ; 
+				it++;
+			}
+			cl->Get_chan().erase(it);
+			chan->EraseClient(*cl);
 			if (chan->getClient().empty())
 				_channels.erase(chan);
 		}

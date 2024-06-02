@@ -18,6 +18,7 @@ SRCS    = srcs/Numerics.cpp \
 		srcs/cOPER.cpp \
 		srcs/cPART.cpp \
 		srcs/cNAMES.cpp \
+		srcs/cKICK.cpp 
 
 OBJS_DIR = objs/
 OBJS    = $(SRCS:srcs/%.cpp=$(OBJS_DIR)%.o)
