@@ -23,14 +23,21 @@ void	Reply::RPL_CHANNELMODEIS(const Client& cl, const Channel& chan) {
 //(332)
 void	Reply::RPL_TOPIC(const Client& cl, Channel& chan) {cl.reply(" 332 " + cl.Get_nick() + " " + chan.getName() + " " + chan.getTopic());}
 
+//(341)
+void	Reply::RPL_INVITING(const Client& cl, const std::string nick, Channel& chan) {cl.reply(" 341 " + cl.Get_nick() + " " + nick + " " + chan.getName());}
+
 //(353)
 void	Reply::RPL_NAMREPLY(const Client& cl, Channel& chan) {
 	std::string msg = " 353 " + cl.Get_nick() + " = " + chan.getName() + " :";
 	std::string chan_clients;
 	unsigned int size = chan.getClient().size();
 	std::map<const std::string, Client>::iterator it = chan.getClientsIt();
-	while (size--)
-		chan_clients += "@" + (it++)->second.Get_nick() + " ";
+	while (size--) {
+		if (chan.IsOperator(it->second))
+			chan_clients += "@" + (it++)->second.Get_nick() + " ";
+		else
+			chan_clients += (it++)->second.Get_nick() + " ";
+	}
 	cl.reply(msg + chan_clients);
 }
 
@@ -63,6 +70,9 @@ void	Reply::ERR_USERNOTINCHANNEL(const Client& cl, const std::string nick, const
 
 //(442)
 void	Reply::ERR_NOTONCHANNEL(const Client& cl, const std::string chan) {cl.reply(" 442 " + cl.Get_nick() + " " + chan + " :You're not on that channel");}
+
+//(443)
+void	Reply::ERR_USERONCHANNEL(const Client& cl, const std::string nick, Channel& chan) {cl.reply(" 443 " + cl.Get_nick() + " " + nick + " " + chan.getName() + " :is already on channel");}
 
 //(451)
 void	Reply::ERR_NOTREGISTERED(const Client& cl) {cl.reply(" 451 " + cl.Get_nick() + " :You have not registered");}

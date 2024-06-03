@@ -18,7 +18,7 @@ void Server::cPART(std::vector<std::string> messages, int fd) {
 
 			std::vector<Channel>::iterator it = cl->Get_chan().begin();
 			while (it != cl->Get_chan().end()) {
-				if (it->getName() == chan->getName()) break ; 
+				if (it->getName() == chan->getName()) break ;
 				it++;
 			}
 			cl->Get_chan().erase(it);

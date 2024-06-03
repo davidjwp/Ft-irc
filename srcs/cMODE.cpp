@@ -89,11 +89,12 @@ void	Server::cMODE(std::vector<std::string> messages, int fd) {
 
 	//for user MODE//look out for this command in channel //or not idk
 	try {
+		if (msg->find('\r') != std::string::npos) msg->erase(msg->find('\r'));
 		Client nick = getClientName(*msg);
 		if (nick.Get_nick() != cl->Get_nick()) {Reply::ERR_USERSDONTMATCH(*cl); return ;}
-		
+
 		if (messages.size() == 2) { Reply::RPL_UMODEIS(*cl); return ;}
-		
+
 		if (!Check_mod_ops(msg + 1, messages.end(), cl)) return ;
 
 		while (++msg != messages.end()) {
@@ -110,11 +111,11 @@ void	Server::cMODE(std::vector<std::string> messages, int fd) {
 //	for channel MODE
 	try {
 		if (msg->find('\r') != std::string::npos) msg->erase(msg->find('\r'));
-		std::vector<Channel>::iterator chan = getChanName(*msg);
+		std::vector<Channel>::iterator chan = getChanName(*msg++);
 		if (!OnChannel(*cl, *chan)) {Reply::ERR_NOTONCHANNEL(*cl, chan->getName()); return ;}//HERE
 		if (chan->getOpMode() && chan->IsOperator(*cl)) {Reply::ERR_CHANOPRIVSNEEDED(*cl, chan->getName()); return ;}
 
-		if (msg + 1 == messages.end()) {Reply::RPL_CHANNELMODEIS(*cl, *chan); return ;}
+		if (msg == messages.end()) {Reply::RPL_CHANNELMODEIS(*cl, *chan); return ;}
 		if (!Check_mod_ops(msg, messages.end(), cl)) return ;
 
 		while (++msg != messages.end()) {
@@ -148,7 +149,7 @@ void	Server::cMODE(std::vector<std::string> messages, int fd) {
 			}
 		}
 	}
-	catch (std::exception &err){}
+	catch (std::exception &err){Reply::ERR_NOSUCHCHANNEL(*cl, *msg); return ;}
 	//if (*msg == cl->Get_nick()) Reply::ERR_USERSDONTMATCH(*cl);
 }
 

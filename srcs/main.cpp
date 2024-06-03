@@ -24,6 +24,8 @@ bool Channel::getTopicMode() const {return _topic_mode;}
 bool Channel::getKeyMode() const {return _key_mode;}
 bool Channel::getOpMode() const {return _op_mode;}
 
+void Channel::addOper(Client& client) {_operators[client.Get_nick()] = client;}
+void Channel::remOper(Client& client) {_operators.erase(client.Get_nick());}
 void Channel::AddClient(Client& client) {_clients[client.Get_nick()] = client;}
 void Channel::setName(std::string name) {_name = name;}
 void Channel::setInviteo(bool inv) {_invit_mode = inv;}
@@ -122,6 +124,7 @@ void Client::isRegistered() {
 			_state += REG;
 			Reply::RPL_WELCOME(*this);
 		}
+		return ;
 	}
 	std::cout << "Registering ... \n" << colstring(Bred, std::string("Missing "));
 	if (!(_state & NICK))
@@ -239,28 +242,50 @@ void	Server::Clients_Status() {
 }
 
 //revised version
-std::string	Server::Get_message(int clfd) {
-	std::string	msg;
-	char	buf[BUFFER_SIZE];
-	bzero(buf, BUFFER_SIZE);
-	std::vector<Client>::iterator client = getClientit(clfd);
-	msg = client->Get_msg();
+//std::string	Server::Get_message(int clfd) {
+//	std::string	msg;
+//	char	buf[BUFFER_SIZE];
+//	bzero(buf, BUFFER_SIZE);
+//	std::vector<Client>::iterator client = getClientit(clfd);
+//	msg = client->Get_msg();
 
-	while (!std::memchr(buf, '\n', BUFFER_SIZE)){
-		int n = recv(clfd, buf, BUFFER_SIZE, MSG_DONTWAIT);
-		if (n < 0) {
-			if (errno != EWOULDBLOCK) throw Error("Error: Server::Get_message recv blocking error.");
-			return "";
-		} else if (n == 0) {
-			throw Error("");
-		}
-		client->addMsg(std::string(buf, n));
-		msg.append(buf, n);
-		if (std::memchr(buf, '\n', n)) break;
-		msg += buf;
-	}
-	client->Set_msg("");
-	return msg;
+//	while (!std::memchr(buf, '\n', BUFFER_SIZE)){
+//		int n = recv(clfd, buf, BUFFER_SIZE, MSG_DONTWAIT);
+//		if (n < 0) {
+//			if (errno != EWOULDBLOCK) throw Error("Error: Server::Get_message recv blocking error.");
+//			return "";
+//		} else if (n == 0) {
+//			throw Error("");
+//		}
+//		client->addMsg(std::string(buf, n));
+//		msg.append(buf, n);
+//		if (std::memchr(buf, '\n', n)) break;
+//		msg += buf;
+//	}
+//	client->Set_msg("");
+//	return msg;
+//}
+
+std::string Server::Get_message(int clfd) {
+    std::string msg;
+    char buf[BUFFER_SIZE];
+    bzero(buf, BUFFER_SIZE);
+    std::vector<Client>::iterator client = getClientit(clfd);
+    msg = client->Get_msg();
+
+    while (true) {
+        int n = recv(clfd, buf, BUFFER_SIZE, 0); // No need for MSG_DONTWAIT since poll() ensures readiness
+        if (n < 0) {
+            throw Error("Error: Server::Get_message recv error.");
+        } else if (n == 0) {
+            throw Error("Error: Client disconnected.");
+        }
+        client->addMsg(std::string(buf, n));
+        msg.append(buf, n);
+        if (std::memchr(buf, '\n', n)) break;
+    }
+    client->Set_msg("");
+    return msg;
 }
 
 //std::string	Server::Get_message(int clfd) {
@@ -358,12 +383,12 @@ void	Server::Proc_message(std::string message, int clfd) {
 		msg_split.push_back(tmp);
 
 	std::string  ccoms[] = {"NICK", "USER", "PASS", "MODE", "JOIN", "PRIVMSG", "OPER", \
-							"PART", "NAMES", "KICK", /*"INVITE", "TOPIC",*/ "PING"};
+							"PART", "NAMES", "KICK", "INVITE", /*"TOPIC",*/ "PING"};
 	
 	void	(Server::*commands[])(std::vector<std::string> msg_split, int clfd) = {
 		&Server::cNICK, &Server::cUSER, &Server::cPASS, &Server::cMODE, &Server::cJOIN, &Server::cPRIVMSG, 
-		&Server::cOPER, &Server::cPART, &Server::cNAMES, &Server::cKICK/*, 
-		&Server::cINVITE, &Server::cTOPIC*/, &Server::cPING};
+		&Server::cOPER, &Server::cPART, &Server::cNAMES, &Server::cKICK, 
+		&Server::cINVITE, /*&Server::cTOPIC,*/ &Server::cPING};
 
 	for (int i = 0; i < 14; i++){
 		if (!msg_split[0].compare(ccoms[i])) {

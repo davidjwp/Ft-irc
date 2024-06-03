@@ -100,6 +100,8 @@ public:
 	void setTopic(std::string);
 	void setTopicMode(bool);
 	void setKeyMode(bool);
+	void addOper(Client&);
+	void remOper(Client&);
 	//void addClient();
 	//void setTopic(std::string);
 	bool IsBanned(const std::string&);
@@ -231,6 +233,8 @@ public:
 	static void RPL_CHANNELMODEIS(const Client&, const Channel&);
 	//(332)
 	static void RPL_TOPIC(const Client&, Channel&);
+	//(341)
+	static void RPL_INVITING(const Client&, const std::string , Channel&);
 	//(353)
 	static void RPL_NAMREPLY(const Client&, Channel&);
 	//(366)
@@ -253,6 +257,8 @@ public:
 	static void ERR_USERNOTINCHANNEL(const Client&, const std::string, const Channel&);
 	//(442)
 	static void ERR_NOTONCHANNEL(const Client&, const std::string);
+	//(443)
+	static void ERR_USERONCHANNEL(const Client&, const std::string, Channel&);
 	//(451)
 	static void ERR_NOTREGISTERED(const Client&);
 	//(461)

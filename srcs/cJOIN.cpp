@@ -62,9 +62,8 @@ void Server::cJOIN(std::vector<std::string> messages, int fd){
 			}
 			AddChannel(newchan);
 			cl->add_chan(newchan);
+			newchan.addOper(*cl);
 			newchan.Broadcast(std::string(cl->makeCLname() + " Join :" + *it));
-			//cl->Get_chan(); idk
-			//cl->reply(" Join :" + *it);//channel join reply
 			Reply::RPL_TOPIC(*cl, newchan);
 			Reply::RPL_NAMREPLY (*cl, newchan);
 			Reply::RPL_ENDOFNAMES(*cl, newchan.getName());
@@ -73,6 +72,8 @@ void Server::cJOIN(std::vector<std::string> messages, int fd){
 		}
 		//channel exists
 		if (chans->getInvit() == true) {Reply::ERR_INVITEONLYCHAN(*cl, chans->getName()); continue ;}
+		//or this
+		//if (chans->getInvitMode()) {Reply::ERR_INVITEONLYCHAN(*cl, chans->getName()); continue ;}
 
 		if (chans->getLimit() != -1 && chans->getLimit() <= ChanClientAmount(*chans)) {Reply::ERR_CHANNELISFULL(*cl, chans->getName()); continue ;}
 
