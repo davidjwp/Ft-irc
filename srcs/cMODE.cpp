@@ -1,22 +1,18 @@
-#include "irc.hpp"
+#include "../includes/irc.hpp"
 
 //TO TEST
 
 static bool Check_mod_ops(
 	std::vector<std::string>::iterator msgs, 
-	std::vector<std::string>::iterator end,
 	std::vector<Client>::iterator cl) {
-	while (msgs != end) {
-		if (msgs->find('\r') != std::string::npos) msgs->erase(msgs->find('\r'));
+	if (msgs->find('\r') != std::string::npos) msgs->erase(msgs->find('\r'));
 
-		if (msgs->size() != 2) {Reply::ERR_UMODEUNKNOWNFLAG(*cl); return false;}
+	if (msgs->size() != 2) {Reply::ERR_UMODEUNKNOWNFLAG(*cl); return false;}
 
-		if (msgs->at(0) != '-' && msgs->at(0) != '+') {Reply::ERR_UMODEUNKNOWNFLAG(*cl); return false;}
+	if (msgs->at(0) != '-' && msgs->at(0) != '+') {Reply::ERR_UMODEUNKNOWNFLAG(*cl); return false;}
 
-		if (msgs->at(1) != 'i' && msgs->at(1) != 'k' && msgs->at(1) != 'l' && msgs->at(1) != 'o' && msgs->at(1) != 't')
-		{Reply::ERR_UMODEUNKNOWNFLAG(*cl); return false;}
-		msgs++;
-	}
+	if (msgs->at(1) != 'i' && msgs->at(1) != 'k' && msgs->at(1) != 'l' && msgs->at(1) != 'o' && msgs->at(1) != 't')
+	{Reply::ERR_UMODEUNKNOWNFLAG(*cl); return false;}
 	return true;
 }
 
@@ -88,24 +84,24 @@ void	Server::cMODE(std::vector<std::string> messages, int fd) {
 	else {Reply::ERR_NEEDMOREPARAMS(*cl, messages[0]); return ;}
 
 	//for user MODE//look out for this command in channel //or not idk
-	try {
-		if (msg->find('\r') != std::string::npos) msg->erase(msg->find('\r'));
-		Client nick = getClientName(*msg);
-		if (nick.Get_nick() != cl->Get_nick()) {Reply::ERR_USERSDONTMATCH(*cl); return ;}
+	//try {
+	//	if (msg->find('\r') != std::string::npos) msg->erase(msg->find('\r'));
+	//	Client nick = getClientName(*msg);
+	//	if (nick.Get_nick() != cl->Get_nick()) {Reply::ERR_USERSDONTMATCH(*cl); return ;}
 
-		if (messages.size() == 2) { Reply::RPL_UMODEIS(*cl); return ;}
+	//	if (messages.size() == 2) { Reply::RPL_UMODEIS(*cl); return ;}
 
-		if (!Check_mod_ops(msg + 1, messages.end(), cl)) return ;
+	//	if (!Check_mod_ops(msg + 1, messages.end(), cl)) return ;
 
-		while (++msg != messages.end()) {
-			if (msg->at(1) != 'i') return ;
+	//	while (++msg != messages.end()) {
+	//		if (msg->at(1) != 'i') return ;
 
-			if (msg->at(0) == '+' && !(cl->Get_state() & INV)) cl->Set_state(INV);
-			if (msg->at(0) == '-' && (cl->Get_state() & INV)) cl->Set_state(-INV);
-		}
-		return ;
-	}
-	catch (std::exception &err){}
+	//		if (msg->at(0) == '+' && !(cl->Get_state() & INV)) cl->Set_state(INV);
+	//		if (msg->at(0) == '-' && (cl->Get_state() & INV)) cl->Set_state(-INV);
+	//	}
+	//	return ;
+	//}
+	//catch (std::exception &err){}
 
 
 //	for channel MODE
@@ -116,37 +112,34 @@ void	Server::cMODE(std::vector<std::string> messages, int fd) {
 		if (chan->getOpMode() && chan->IsOperator(*cl)) {Reply::ERR_CHANOPRIVSNEEDED(*cl, chan->getName()); return ;}
 
 		if (msg == messages.end()) {Reply::RPL_CHANNELMODEIS(*cl, *chan); return ;}
-		if (!Check_mod_ops(msg, messages.end(), cl)) return ;
+		if (!Check_mod_ops(msg, cl)) return ;
 
-		while (++msg != messages.end()) {
-			short unsigned int mod = msg->at(1);
-
-			switch (mod) {
-				case ('i') : {
-					msg->at(0) == '+' ? ChangeInvito(true, *cl, *chan) : ChangeInvito(false, *cl, *chan);
-					break ;	
-				}
-				case ('t') : {
-					msg->at(0) == '+' ? Change_topic(true, *cl, *chan) : Change_topic(false, *cl, *chan);
-					break ;
-				}
-				case ('k') : {
-					if (msg + 1 == messages.end()) {Reply::ERR_NEEDMOREPARAMS(*cl, *msg); break ;}
-					msg->at(0) == '+' ? ChangePassword(true, *(msg + 1), *cl, *chan) : ChangePassword(false, *(msg + 1), *cl, *chan);
-					break ;
-				}
-				case ('o') : {
-					if (msg + 1 == messages.end()) {Reply::ERR_NEEDMOREPARAMS(*cl, *msg); break ;}
-					msg->at(0) == '+' ? ChangeOper(true, *(msg + 1), *chan, *cl) : ChangeOper(false, *(msg + 1), *chan, *cl);
-					break ;
-				}
-				case ('l') : {
-					if (msg + 1 == messages.end()) {Reply::ERR_NEEDMOREPARAMS(*cl, *msg); break ;}
-					msg->at(0) == '+' ? ChangeLimit(true, *(msg + 1), *chan, *cl): ChangeLimit(false, *(msg + 1), *chan, *cl);
-					break ;
-				}
-				default : {Reply::ERR_UMODEUNKNOWNFLAG(*cl); break ;}
+		short unsigned int mod = msg->at(1);
+		switch (mod) {
+			case ('i') : {
+				msg->at(0) == '+' ? ChangeInvito(true, *cl, *chan) : ChangeInvito(false, *cl, *chan);
+				return ;	
 			}
+			case ('t') : {
+				msg->at(0) == '+' ? Change_topic(true, *cl, *chan) : Change_topic(false, *cl, *chan);
+				return ;
+			}
+			case ('k') : {
+				if (msg + 1 == messages.end()) {Reply::ERR_NEEDMOREPARAMS(*cl, *msg); return ;}
+				msg->at(0) == '+' ? ChangePassword(true, *(msg + 1), *cl, *chan) : ChangePassword(false, *(msg + 1), *cl, *chan);
+				return ;
+			}
+			case ('o') : {
+				if (msg + 1 == messages.end()) {Reply::ERR_NEEDMOREPARAMS(*cl, *msg); return ;}
+				msg->at(0) == '+' ? ChangeOper(true, *(msg + 1), *chan, *cl) : ChangeOper(false, *(msg + 1), *chan, *cl);
+				return ;
+			}
+			case ('l') : {
+				if (msg + 1 == messages.end()) {Reply::ERR_NEEDMOREPARAMS(*cl, *msg); return ;}
+				msg->at(0) == '+' ? ChangeLimit(true, *(msg + 1), *chan, *cl): ChangeLimit(false, *(msg + 1), *chan, *cl);
+				return ;
+			}
+			default : {Reply::ERR_UMODEUNKNOWNFLAG(*cl); return ;}
 		}
 	}
 	catch (std::exception &err){Reply::ERR_NOSUCHCHANNEL(*cl, *msg); return ;}

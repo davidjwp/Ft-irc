@@ -1,4 +1,4 @@
-#include "irc.hpp"
+#include "../includes/irc.hpp"
 
 //WORK IN PROGRESS 
 
@@ -30,15 +30,19 @@ void Server::cPRIVMSG(std::vector<std::string> messages, int fd) {
 			message += *msg;
 		}
 		if (message.find('\r') != std::string::npos) message.erase(message.find('\r'));
+		
+		client.reply(" PRIVMSG " + client.Get_nick() + " :" + message);
+		//client.reply(" PRIVMSG " + client.Get_nick() + " :" + message);
+		
 
-		std::string HA = client.makeCLname() + " PRIVMSG " + client.Get_nick() + " :" +message;
-		for (std::vector<Channel>::iterator it = _channels.begin(); it != _channels.end(); it++) {
-			for (std::map<const std::string, Client>::iterator cls = it->getClient().begin(); cls != it->getClient().end(); cls++)
-				send(cls->second.Get_clfd(), HA.c_str(), HA.size(), 0);
-		}
+		//std::string HA = client.makeCLname() + " PRIVMSG " + client.Get_nick() + " :" +message;
+		//for (std::vector<Channel>::iterator it = _channels.begin(); it != _channels.end(); it++) {
+		//	for (std::map<const std::string, Client>::iterator cls = it->getClient().begin(); cls != it->getClient().end(); cls++)
+		//		send(cls->second.Get_clfd(), HA.c_str(), HA.size(), 0);
+		//}
 
-		for (std::vector<Client>::iterator it = _clients.begin(); it != _clients.end(); it++)
-			it->reply(" PRIVMSG " + client.Get_nick() + " :" + message);
+		//for (std::vector<Client>::iterator it = _clients.begin(); it != _clients.end(); it++)
+		//	it->reply(" PRIVMSG " + client.Get_nick() + " :" + message);
 
 
 		//client.reply(" PRIVMSG " + client.Get_nick() + " :" + message);
@@ -70,3 +74,14 @@ void Server::cPRIVMSG(std::vector<std::string> messages, int fd) {
 		catch (std::exception& err) { Reply::ERR_NOTONCHANNEL(*cl, *msg); return ;}//might not need to be part of the channel
 	}
 }
+
+
+
+/*
+$2 = (Client &) @0x555555592110: {_hostname = "localhost", _nickname = "POOO", _username = "djacobs", _realname = "David JACOBS", _channels = std::vector of length 0, capacity 0, _clfd = 4, _state = 31, 
+  _msg = ""}
+
+
+$3 = (Client &) @0x555555592110: {_hostname = "localhost", _nickname = "POOO", _username = "djacobs", _realname = "David JACOBS", _channels = std::vector of length 0, capacity 1, _clfd = 4, _state = 31, 
+  _msg = ""}
+*/

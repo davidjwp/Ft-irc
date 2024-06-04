@@ -9,7 +9,7 @@ cd irssi-1.2.3
 make
 make install
 
-export PATH=$HOME/irssi/bin:$PATH
+export PATH=$PATH:$HOME/irssi/bin
 
 source ~/.bashrc
 

@@ -21,6 +21,7 @@ void Server::cPART(std::vector<std::string> messages, int fd) {
 				if (it->getName() == chan->getName()) break ;
 				it++;
 			}
+			cl->reply(" PART " + chan->getName());
 			cl->Get_chan().erase(it);//this
 			chan->EraseClient(*cl);
 			if (chan->getClient().empty())

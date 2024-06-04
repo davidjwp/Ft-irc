@@ -1,4 +1,4 @@
-#include "irc.hpp"
+#include "../includes/irc.hpp"
 
 //WORK IN PROGRESS
 
@@ -19,6 +19,13 @@ void Server::cJOIN(std::vector<std::string> messages, int fd){
 	else {Reply::ERR_NEEDMOREPARAMS(*cl, messages[0]); return ;}
 
 	if (!(cl->Get_state() & REG)) {Reply::ERR_NOTREGISTERED(*cl); return ;}
+
+	//(void)ChanClientAmount;
+	//Channel newchan("#test", *cl);
+	//Reply::RPL_TOPIC(*cl, newchan);
+	//Reply::RPL_NAMREPLY (*cl, newchan);
+	//Reply::RPL_ENDOFNAMES(*cl, newchan.getName());
+	//cl->reply(" PART #test");
 
 	std::vector<std::string> chanNames;
 	
@@ -44,10 +51,10 @@ void Server::cJOIN(std::vector<std::string> messages, int fd){
 	for (std::vector<std::string>::iterator it = chanNames.begin(); it != chanNames.end(); it++) {
 		if (it->at(0) != '#') { Reply::ERR_BADCHANMASK(*cl, *msg); return ;}
 
-		std::vector<Channel>::iterator chans; 
-		try {chans = getChanName(*it);/*findChan(*it)*/}
-		catch (std::exception& err){ 
 		//channel does not exist
+		std::vector<Channel>::iterator chans; 
+		try {chans = getChanName(*it);}
+		catch (std::exception& err){ 
 			if (it->find('\r') != std::string::npos) it->erase(it->find('\r'));
 			
 			if ( it->find(',') != std::string::npos || \
@@ -70,6 +77,7 @@ void Server::cJOIN(std::vector<std::string> messages, int fd){
 			Server::_channels.push_back(newchan);//careful with Server::
 			continue ;
 		}
+		
 		//channel exists
 		if (chans->getInvit() == true) {Reply::ERR_INVITEONLYCHAN(*cl, chans->getName()); continue ;}
 		//or this
