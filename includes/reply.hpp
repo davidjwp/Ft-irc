@@ -1,6 +1,28 @@
 #ifndef REPLY_HPP
 # define REPLY_HPP
 
+// Library Includes
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
+#include <iostream>
+#include <cstring>
+#include <unistd.h>
+#include <arpa/inet.h>
+#include <poll.h>
+#include <vector>
+#include <algorithm>
+#include <signal.h>
+#include <vector>
+#include <exception>
+#include <fcntl.h>
+#include <string>
+#include <sstream>
+#include <errno.h>
+#include <map>
+#include <cctype>
+
+// File Includes
 # include "irc.hpp"
 
 class Client;
