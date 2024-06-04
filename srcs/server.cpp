@@ -86,31 +86,6 @@ void	Server::Clients_Status() {
 	}
 }
 
-//revised version
-//std::string	Server::Get_message(int clfd) {
-//	std::string	msg;
-//	char	buf[BUFFER_SIZE];
-//	bzero(buf, BUFFER_SIZE);
-//	std::vector<Client>::iterator client = getClientit(clfd);
-//	msg = client->Get_msg();
-
-//	while (!std::memchr(buf, '\n', BUFFER_SIZE)){
-//		int n = recv(clfd, buf, BUFFER_SIZE, MSG_DONTWAIT);
-//		if (n < 0) {
-//			if (errno != EWOULDBLOCK) throw Error("Error: Server::Get_message recv blocking error.");
-//			return "";
-//		} else if (n == 0) {
-//			throw Error("");
-//		}
-//		client->addMsg(std::string(buf, n));
-//		msg.append(buf, n);
-//		if (std::memchr(buf, '\n', n)) break;
-//		msg += buf;
-//	}
-//	client->Set_msg("");
-//	return msg;
-//}
-
 std::string Server::Get_message(int clfd) {
     std::string msg;
     char buf[BUFFER_SIZE];
@@ -132,28 +107,6 @@ std::string Server::Get_message(int clfd) {
     client->Set_msg("");
     return msg;
 }
-
-//std::string	Server::Get_message(int clfd) {
-//	std::string	msg;
-//	char	buf[256];
-//	bzero(buf, 256);
-//	std::vector<Client>::iterator client = getClientit(clfd);
-//	msg = client->Get_msg();
-
-//	while (!std::strstr(buf, "\n")){
-//		bzero(buf,256);
-//		int n = 0;
-//		if ((n = recv(clfd, buf, 256, MSG_DONTWAIT)) < 0){
-//			if (errno != EWOULDBLOCK) throw Error("Error: Server::Get_message recv blocking error.");
-//			return "";
-//		}
-//		else if (n == 0) throw Error("Error: Server::Get_message client disconnect.");
-//		client->addMsg(buf);
-//		msg += buf;
-//	}
-//	client->Set_msg("");
-//	return msg;
-//}
 
 std::vector<std::string> Server::split(std::string msg) {
 	std::vector<std::string> cmd;
@@ -290,54 +243,3 @@ std::string Server::Get_host(){ return _host;}
 std::string Server::Get_pass(){ return _pass;}
 std::string Server::Get_opass(){ return _opass;}
 
-
-//IMPLEMENT PING TO PREVENT IRSSI FROM RECONNECTING 
-
-
-//watch out for channel names, nicknames, username and all changes to clients in the PROTOCOL
-
-/*
-### Common Privileged Channel Modes
-
-1. **Invite-Only (`+i`)**:
-   - **Who Can Set It**: Only channel operators or higher can set this mode.
-   - **Command**: `/mode #channel +i`
-   
-2. **Moderated (`+m`)**:
-   - **Who Can Set It**: Only channel operators or higher can set this mode.
-   - **Command**: `/mode #channel +m`
-   
-3. **Topic Settable by Ops Only (`+t`)**:
-   - **Who Can Set It**: Only channel operators or higher can set this mode.
-   - **Command**: `/mode #channel +t`
-   
-4. **Key (Password) Protected (`+k`)**:
-   - **Who Can Set It**: Only channel operators or higher can set this mode.
-   - **Command**: `/mode #channel +k <password>`
-   
-5. **User Limit (`+l`)**:
-   - **Who Can Set It**: Only channel operators or higher can set this mode.
-   - **Command**: `/mode #channel +l <number>`
-
-### Example
-
-If a user named `john` is a channel operator in the `#example` channel, he can set the channel to invite-only mode with the following command:
-
-```
-/mode #example +i
-```
-
-If `john` is not a channel operator and attempts to set the invite-only mode, he will receive an error, typically `ERR_CHANOPRIVSNEEDED` (482):
-
-```
-:irc.example.com 482 john #example :You're not channel operator
-```
-
-### Permissions and Roles
-
-- **Channel Founder (`+q`)**: The highest level of control, typically can do anything within the channel.
-- **Channel Protected (`+a`)**: Protected status, often cannot be kicked by regular operators.
-- **Channel Operator (`+o`)**: Standard operator, can change channel modes, kick users, etc.
-- **Channel Half-Operator (`+h`)**: Limited operator, can perform some but not all operator functions.
-- **Voice (`+v`)**: Can speak in moderated channels but does not have operator privileges.
-*/
