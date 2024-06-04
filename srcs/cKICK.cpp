@@ -21,7 +21,8 @@ void Server::cKICK(std::vector<std::string> messages, int fd) {
 
 	Client client;
 	try{client = getClientName(*msg);}
-	catch(std::exception& err){Reply::ERR_USERNOTINCHANNEL(*cl, *msg, chan); return ;}
+	catch(std::exception& err){Reply::ERR_NOSUCHNICK(*cl, *msg); return ;}
+	if (!OnChannel(client, chan)) {Reply::ERR_USERNOTINCHANNEL(*cl, client.Get_nick(), chan); return ;}
 
 	msg->erase(0);
 	std::string kick_message;
