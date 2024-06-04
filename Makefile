@@ -1,43 +1,60 @@
 NAME    = ircserv
 
 # Compiler and flags
-CC      = g++
-CFLAGS  = -g -std=c++98 -Wextra -Werror -Wall
+CXX      = g++
+CXXFLAGS  = -g -std=c++98 -Wextra -Werror -Wall
 
-# Directories and files
-HEADERS = srcs/irc.hpp
-SRCS    = srcs/Numerics.cpp \
-		srcs/main.cpp \
-		srcs/cNICK.cpp \
-		srcs/cUSER.cpp \
-		srcs/cPASS.cpp \
-		srcs/cMODE.cpp \
-		srcs/cJOIN.cpp \
-		srcs/cPRIVMSG.cpp \
-		srcs/cPING.cpp \
-		srcs/cOPER.cpp \
-		srcs/cPART.cpp \
-		srcs/cNAMES.cpp \
-		srcs/cKICK.cpp \
-		srcs/cINVITE.cpp \
-		srcs/cTOPIC.cpp
 
+# Directories
 OBJS_DIR = objs/
-OBJS    = $(SRCS:srcs/%.cpp=$(OBJS_DIR)%.o)
+INCLUDES_DIR = includes/
+SRCS_DIR = srcs/
+
+# Files
+INCLUDES = channel.hpp \
+			client.hpp \
+			irc.hpp \
+			reply.hpp \
+			server.hpp \
+
+SRCS	= main.cpp \
+		channel.cpp \
+		client.cpp \
+		reply.cpp \
+		server.cpp \
+		cNICK.cpp \
+		cUSER.cpp \
+		cPASS.cpp \
+		cMODE.cpp \
+		cJOIN.cpp \
+		cPRIVMSG.cpp \
+		cPING.cpp \
+		cOPER.cpp \
+		cPART.cpp \
+		cNAMES.cpp \
+		cKICK.cpp \
+		cINVITE.cpp \
+		cTOPIC.cpp \
+
+OBJS	= $(SRCS:%.cpp=$(OBJS_DIR)%.o)
 
 all: $(NAME)
 
-$(NAME): $(OBJS)
-	$(CC) $(CFLAGS) $(OBJS) -o $(NAME)
+$(NAME): $(OBJS_DIR) $(OBJS) $(addprefix $(INCLUDES_DIR), $(INCLUDES))
+	$(CXX) $(CXXFLAGS) $(OBJS) -o $(NAME)
 
-$(OBJS_DIR)%.o: srcs/%.cpp $(HEADERS)
+$(OBJS): $(OBJS_DIR)%.o: $(SRCS_DIR)%.cpp $(addprefix $(INCLUDES_DIR), $(INCLUDES))
+	$(CXX) -c $(CXXFLAGS) -I$(INCLUDES_DIR) $< -o $@
+
+$(OBJS_DIR):
 	@mkdir -p $(OBJS_DIR)
-	$(CC) -c $(CFLAGS) $< -o $@
 
 clean:
-	rm -f $(OBJS)
+	rm -rf $(OBJS) $(OBJS_DIR)
 
 fclean: clean
-	rm -f $(NAME)
+	rm -rf $(NAME)
 
 re: fclean all
+
+.PHONY: all clean fclean re 
