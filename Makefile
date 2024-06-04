@@ -11,15 +11,17 @@ INCLUDES_DIR = includes/
 SRCS_DIR = srcs/
 
 # Files
-INCLUDES = irc.hpp \
+INCLUDES = channel.hpp \
+			client.hpp \
+			irc.hpp \
 			reply.hpp \
 			server.hpp \
-			channel.hpp \
-			client.hpp \
 
-SRCS	= Numerics.cpp \
-		main.cpp \
-		irc.cpp \
+SRCS	= main.cpp \
+		channel.cpp \
+		client.cpp \
+		reply.cpp \
+		server.cpp \
 		cNICK.cpp \
 		cUSER.cpp \
 		cPASS.cpp \
