@@ -49,6 +49,7 @@ bool Channel::IsOperator(const Client& cl) const {
 
 void Channel::Broadcast(std::string msg, int fd) const {
 	msg += "\r\n";
+	std::cout << colstring(Bgreen, msg) << std::endl;
 	for (std::map<const std::string, Client>::const_iterator it = _clients.begin(); it != _clients.end(); it++)
 		if (fd != it->second.Get_clfd() && send(it->second.Get_clfd(), msg.c_str(), msg.size(), 0) == -1) throw Error("Error: Channel::Broadcast send failed.");
 }
@@ -150,7 +151,7 @@ void Client::reply(const std::string& msg) const {
 	fpacket.insert(0, makeCLname());
 	fpacket += "\r\n";
 	if (send(_clfd, fpacket.c_str(), fpacket.size(), 0) == -1) throw Error("Error: Client::reply send failed.");
-	std::cout << colstring(Bgreen, fpacket) << std::endl; 
+	std::cout << colstring(Bgreen, fpacket) << std::endl;
 }
 
 //SERVER IMPLEMENTATIONS#########################################################################################################
@@ -383,12 +384,12 @@ void	Server::Proc_message(std::string message, int clfd) {
 		msg_split.push_back(tmp);
 
 	std::string  ccoms[] = {"NICK", "USER", "PASS", "MODE", "JOIN", "PRIVMSG", "OPER", \
-							"PART", "NAMES", "KICK", "INVITE", /*"TOPIC",*/ "PING"};
+							"PART", "NAMES", "KICK", "INVITE", "TOPIC", "PING"};
 	
 	void	(Server::*commands[])(std::vector<std::string> msg_split, int clfd) = {
 		&Server::cNICK, &Server::cUSER, &Server::cPASS, &Server::cMODE, &Server::cJOIN, &Server::cPRIVMSG, 
 		&Server::cOPER, &Server::cPART, &Server::cNAMES, &Server::cKICK, 
-		&Server::cINVITE, /*&Server::cTOPIC,*/ &Server::cPING};
+		&Server::cINVITE, &Server::cTOPIC, &Server::cPING};
 
 	for (int i = 0; i < 14; i++){
 		if (!msg_split[0].compare(ccoms[i])) {
