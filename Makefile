@@ -12,7 +12,10 @@ SRCS_DIR = srcs/
 
 # Files
 INCLUDES = irc.hpp \
-			reply.hpp
+			reply.hpp \
+			server.hpp \
+			channel.hpp \
+			client.hpp \
 
 SRCS	= Numerics.cpp \
 		main.cpp \
