@@ -28,7 +28,7 @@ void Server::cNICK(std::vector<std::string> messages, int fd){
 	if (msg->find('\r') != std::string::npos) msg->erase(msg->find('\r'));
 
 	for (std::vector<Client>::iterator clients = _clients.begin(); clients != _clients.end(); clients++)
-		if (clients->Get_nick() == *msg) Reply::ERR_NICKNAMEINUSE(*cl, *msg);
+		if (clients->Get_nick() == *msg) {Reply::ERR_NICKNAMEINUSE(*cl, *msg); return ;}
 
 	cl->Set_nick(*msg);
 	cl->reply(" NICK :" + *msg);
