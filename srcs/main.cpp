@@ -1,5 +1,7 @@
 #include "irc.hpp"
 
+bool stop_server = false;
+
 void	Signal_handler(const int signal) {
 	(void)signal;
 	stop_server = true;
