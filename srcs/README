@@ -59,3 +59,5 @@ IRC BUGs
 FIXED - wrong password still registers
 
 FIXED - two users can have the same nickname
+
+/connect localhost 4111 pass love
