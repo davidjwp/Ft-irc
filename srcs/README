@@ -50,6 +50,8 @@ irssi
 //8.	close the listening port
 
 
+valgrind --track-fds=yes 
+
 /connect localhost 4222 pass NEW
 
 IRC BUGs

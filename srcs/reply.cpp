@@ -60,7 +60,7 @@ void	Reply::ERR_NOSUCHCHANNEL(const Client& cl, const std::string& chan) {cl.rep
 void	Reply::ERR_NONICKNAMEGIVEN(const Client& cl) { cl.reply(" 431 " + cl.Get_nick() + " :No nickname given");}
 
 //(432)
-void	Reply::ERR_ERRONEUSNICKNAME(const Client& cl, const std::string& err) { cl.reply(" 432 " + cl.Get_nick() + " " + err + ":Erroneous nickname");}
+void	Reply::ERR_ERRONEUSNICKNAME(const Client& cl, const std::string& err) { cl.reply(" 432 " + cl.Get_nick() + " " + err + " :Erroneus nickname");}
 
 //(433)
 void	Reply::ERR_NICKNAMEINUSE(const Client& cl, const std::string& err) { cl.reply(" 433 " + cl.Get_nick() + " " + err + ":Nickname is already in use");}
