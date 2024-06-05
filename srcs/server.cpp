@@ -181,14 +181,14 @@ void	Server::Proc_message(std::string message, int clfd) {
 		msg_split.push_back(tmp);
 
 	std::string  ccoms[] = {"NICK", "USER", "PASS", "MODE", "JOIN", "PRIVMSG", "OPER", \
-							"PART", "NAMES", "KICK", "INVITE", /*"TOPIC",*/ "PING"};
+							"PART", "KICK", "INVITE", "TOPIC", "PING"};
 	
 	void	(Server::*commands[])(std::vector<std::string> msg_split, int clfd) = {
 		&Server::cNICK, &Server::cUSER, &Server::cPASS, &Server::cMODE, &Server::cJOIN, &Server::cPRIVMSG, 
-		&Server::cOPER, &Server::cPART, &Server::cNAMES, &Server::cKICK, 
-		&Server::cINVITE, /*&Server::cTOPIC,*/ &Server::cPING};
+		&Server::cOPER, &Server::cPART, &Server::cKICK, 
+		&Server::cINVITE, &Server::cTOPIC, &Server::cPING};
 
-	for (int i = 0; i < 14; i++){
+	for (int i = 0; i < 12; i++){
 		if (!msg_split[0].compare(ccoms[i])) {
 			(this->*commands[i])(msg_split, clfd); 
 			break;

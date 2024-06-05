@@ -84,24 +84,24 @@ void	Server::cMODE(std::vector<std::string> messages, int fd) {
 	else {Reply::ERR_NEEDMOREPARAMS(*cl, messages[0]); return ;}
 
 	//for user MODE//look out for this command in channel //or not idk
-	//try {
-	//	if (msg->find('\r') != std::string::npos) msg->erase(msg->find('\r'));
-	//	Client nick = getClientName(*msg);
-	//	if (nick.Get_nick() != cl->Get_nick()) {Reply::ERR_USERSDONTMATCH(*cl); return ;}
+	try {
+		if (msg->find('\r') != std::string::npos) msg->erase(msg->find('\r'));
+		Client nick = getClientName(*msg);
+		if (nick.Get_nick() != cl->Get_nick()) {Reply::ERR_USERSDONTMATCH(*cl); return ;}
 
-	//	if (messages.size() == 2) { Reply::RPL_UMODEIS(*cl); return ;}
+		if (messages.size() == 2) { Reply::RPL_UMODEIS(*cl); return ;}
 
-	//	if (!Check_mod_ops(msg + 1, messages.end(), cl)) return ;
+		if (!Check_mod_ops(msg + 1, cl)) return ;
 
-	//	while (++msg != messages.end()) {
-	//		if (msg->at(1) != 'i') return ;
+		while (++msg != messages.end()) {
+			if (msg->at(1) != 'i') return ;
 
-	//		if (msg->at(0) == '+' && !(cl->Get_state() & INV)) cl->Set_state(INV);
-	//		if (msg->at(0) == '-' && (cl->Get_state() & INV)) cl->Set_state(-INV);
-	//	}
-	//	return ;
-	//}
-	//catch (std::exception &err){}
+			if (msg->at(0) == '+' && !(cl->Get_state() & INV)) cl->Set_state(INV);
+			if (msg->at(0) == '-' && (cl->Get_state() & INV)) cl->Set_state(-INV);
+		}
+		return ;
+	}
+	catch (std::exception &err){}
 
 
 //	for channel MODE
