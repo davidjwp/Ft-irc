@@ -74,7 +74,7 @@ void Server::cJOIN(std::vector<std::string> messages, int fd){
 			Reply::RPL_TOPIC(*cl, newchan);
 			Reply::RPL_NAMREPLY (*cl, newchan);
 			Reply::RPL_ENDOFNAMES(*cl, newchan.getName());
-			Server::_channels.push_back(newchan);//careful with Server::
+			//Server::_channels.push_back(newchan);//careful with Server::
 			continue ;
 		}
 		

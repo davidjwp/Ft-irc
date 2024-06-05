@@ -1,5 +1,6 @@
 #include "irc.hpp"
 
+//GOOD
 void Server::cPING(std::vector<std::string> messages, int fd) {
 	std::vector<Client>::iterator cl = getClientit(fd);
 	std::vector<std::string>::iterator msg;

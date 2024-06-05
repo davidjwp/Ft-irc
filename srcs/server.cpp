@@ -132,9 +132,6 @@ void	Server::Disconnect_client(int clfd) {
 			it = _channels.erase(it);
 			if (_channels.empty()) break ;
 		}
-		else
-			it++;
-		
 	}
 	std::cout << colstring(Byellow, std::string("Client erased from channels")) << std::endl;
 

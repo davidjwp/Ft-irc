@@ -63,6 +63,7 @@ void Channel::EraseClient(Client& cl) {
 			std::cout << colstring(Byellow, std::string("Erasing client ...")) << std::endl;
 			Broadcast(cl.makeCLname() + " PART :" + _name);
 			_clients.erase(it);
+			remOper(cl);
 			return ;
 		}
 	}

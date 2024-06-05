@@ -1,2 +1,1 @@
-break cNICK
-break Client_messages
+break Disconnect_client
