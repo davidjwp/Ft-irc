@@ -98,7 +98,7 @@ std::string Server::Get_message(int clfd) {
         if (n < 0) {
             throw Error("Error: Server::Get_message recv error.");
         } else if (n == 0) {
-            throw Error("Error: Client disconnected.");
+            throw Error("Client disconnected.");
         }
         client->addMsg(std::string(buf, n));
         msg.append(buf, n);
@@ -126,12 +126,15 @@ std::vector<std::string> Server::split(std::string msg) {
 void	Server::Disconnect_client(int clfd) {
 	Client cl = GetClient(clfd);
 
-	for (std::vector<Channel>::iterator it = _channels.begin(); it != _channels.end(); it++) {
+	for (std::vector<Channel>::iterator it = _channels.begin(); it != _channels.end() && !_channels.empty(); it++) {
 		it->EraseClient(cl);
 		if (it->getClient().empty())
+		{
 			it = _channels.erase(it);
+		}
 		else
 			it++;
+		
 	}
 	std::cout << colstring(Byellow, std::string("Client erased from channels")) << std::endl;
 

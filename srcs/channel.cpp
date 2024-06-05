@@ -59,7 +59,7 @@ void Channel::Broadcast(std::string msg) const {
 void Channel::EraseClient(Client& cl) {
 	for(std::map<const std::string, Client>::iterator it = _clients.begin(); it != _clients.end(); it++)
 	{
-		if (it->second.Get_clfd() == cl.Get_clfd()) {
+		if ((it->second.Get_clfd() == cl.Get_clfd())) {
 			std::cout << colstring(Byellow, std::string("Erasing client ...")) << std::endl;
 			Broadcast(cl.makeCLname() + " PART :" + _name);
 			_clients.erase(it);
