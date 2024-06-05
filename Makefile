@@ -31,10 +31,10 @@ SRCS	= main.cpp \
 		cPING.cpp \
 		cOPER.cpp \
 		cPART.cpp \
-		cNAMES.cpp \
 		cKICK.cpp \
 		cINVITE.cpp \
 		cTOPIC.cpp \
+		cQUIT.cpp 
 
 OBJS	= $(SRCS:%.cpp=$(OBJS_DIR)%.o)
 

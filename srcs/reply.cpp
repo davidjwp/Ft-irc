@@ -11,12 +11,12 @@ void	Reply::RPL_UMODEIS(const Client& cl) {
 }
 
 void	Reply::RPL_CHANNELMODEIS(const Client& cl, const Channel& chan) {
-	std::string msg = " 324 " + cl.Get_nick() + " " + chan.getName() + " +";
-	if (chan.getInvitMode()) msg += 'i';
-	if (chan.getTopicMode()) msg += 't';
-	if (chan.getKeyMode()) msg += 'k';
-	if (chan.getOpMode()) msg += 'o';
-	if (chan.getLimit() != -1) msg += 'l';
+	std::string msg = " 324 " + cl.Get_nick() + " " + chan.getName() + " ";
+	if (chan.getInvitMode()) msg += "+i";
+	if (chan.getTopicMode()) msg += "+t";
+	if (chan.getKeyMode()) msg += "+k";
+	if (chan.getOpMode()) msg += "+o";
+	if (chan.getLimit() != -1) msg += "+l";
 	cl.reply(msg);
 }
 

@@ -60,6 +60,7 @@ public:
 	void	Disconnect_client(int);
 	Client& getClientName(const string&);
 	vector<Channel>::iterator getChanName(const string&); 
+	unsigned int getChanNum(const  string&) ;
 	void ChangeOper(bool, string, Channel&, Client&);
 	void ChangePassword(bool, string, Client&, Channel&) const;
 	void Change_topic(bool, Client&, Channel&) const;
@@ -84,7 +85,6 @@ public:
 	void	cPING(vector<string>, int);
 	void	cOPER(vector<string>, int);
 	void	cPART(vector<string>, int);
-	void	cNAMES(vector<string>, int);
 	void	cMODE(vector<string>, int);
 	void	cKICK(vector<string>, int);
 	void	cINVITE(vector<string>, int);
@@ -92,6 +92,8 @@ public:
 	void	cTOPIC(vector<string>, int);
 	void	cKILL(vector<string>, int);
 	void	cLIST(vector<string>, int);
+	void	cQUIT(vector<string>, int);
+
 
 	static void	reply(Client, string);
 };

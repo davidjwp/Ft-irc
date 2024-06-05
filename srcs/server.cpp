@@ -181,21 +181,21 @@ void	Server::Proc_message(std::string message, int clfd) {
 		msg_split.push_back(tmp);
 
 	std::string  ccoms[] = {"NICK", "USER", "PASS", "MODE", "JOIN", "PRIVMSG", "OPER", \
-							"PART", "KICK", "INVITE", "TOPIC", "PING"};
+							"PART", "KICK", "INVITE", "TOPIC", "PING", "QUIT"};
 	
 	void	(Server::*commands[])(std::vector<std::string> msg_split, int clfd) = {
 		&Server::cNICK, &Server::cUSER, &Server::cPASS, &Server::cMODE, &Server::cJOIN, &Server::cPRIVMSG, 
 		&Server::cOPER, &Server::cPART, &Server::cKICK, 
-		&Server::cINVITE, &Server::cTOPIC, &Server::cPING};
+		&Server::cINVITE, &Server::cTOPIC, &Server::cPING, &Server::cQUIT};
 
-	for (int i = 0; i < 12; i++){
+	for (int i = 0; i < 13; i++){
 		if (!msg_split[0].compare(ccoms[i])) {
 			(this->*commands[i])(msg_split, clfd); 
 			break;
 		}
 	}
 }
-
+//QUIT :leaving
 Client& Server::GetClient(int fd) {
 	for (std::vector<Client>::iterator it = _clients.begin(); it != _clients.end(); it++)
 		if (it->Get_clfd() == fd) return *it;
@@ -234,6 +234,15 @@ std::vector<Channel>::iterator Server::getChanName(const std::string& chan){
 		if (it->getName() == chan) return it;
 	throw Error ("Error: Server::getChanName can't find channel.");
 }
+
+unsigned int Server::getChanNum(const string& chan){
+	if (!_channels.size()) throw Error ("Error: Server::getChanNum no channel.");
+	for (struct{unsigned int num; std::vector<Channel>::iterator it;}loop = {0, _channels.begin()}; loop.it != _channels.end(); loop.it++) {
+		if (loop.it->getName() == chan) return loop.num;
+		loop.num++;
+	}
+	throw Error ("Error: Server::getChanNum can't find channel.");
+} 
 
 void Server::AddChannel(Channel& chan) {_channels.push_back(chan);}
 

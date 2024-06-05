@@ -29,7 +29,7 @@ void Server::cNICK(std::vector<std::string> messages, int fd){
 	for (std::vector<Client>::iterator clients = _clients.begin(); clients != _clients.end(); clients++)
 		if (clients->Get_nick() == *msg) {
 		Reply::ERR_NICKNAMEINUSE(*cl, *msg); 
-		*msg += SSTR(_clients.size());
+		*msg += SSTR(cl->Get_clfd());
 		cl->Set_nick(*msg);
 		cl->reply(" NICK " + *msg);
 		cl->isRegistered();

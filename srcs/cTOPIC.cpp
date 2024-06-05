@@ -8,30 +8,29 @@ void Server::cTOPIC(std::vector<std::string> messages, int fd) {
 		msg = messages.begin() + 1;
 	else {Reply::ERR_NEEDMOREPARAMS(*cl, messages[0]); return ;}
 
-	Channel chan;
-	try {chan = *getChanName(*msg);}
+	unsigned int  num;
+	try {num = getChanNum(*msg);}
 	catch (std::exception& err) {Reply::ERR_NOSUCHCHANNEL(*cl, *msg); return ;}
-	// cout << "Channel Name: " << chan.getName() << endl;
-	if (!OnChannel(*cl, chan)) {Reply::ERR_NOTONCHANNEL(*cl, *msg); return ;}
+	if (!OnChannel(*cl, _channels[num])) {Reply::ERR_NOTONCHANNEL(*cl, *msg); return ;}
 
-	if (chan.getOpMode() && !chan.IsOperator(*cl)) {Reply::ERR_CHANOPRIVSNEEDED(*cl, *msg); return ;}
+	if (_channels[num].getOpMode() && !_channels[num].IsOperator(*cl)) {Reply::ERR_CHANOPRIVSNEEDED(*cl, *msg); return ;}
 
 	(msg++)->erase(0);
-	// msg++;
 	std::string topic = "";
 	while (msg != messages.end()) {
 		topic += *msg;
 		topic += " ";
 		msg++;
 	}
-	if(topic.find('\r') != string::npos)
+	if(topic.find('\r') != string::npos) 
 		topic.erase(topic.find('\r'));
 
-	// cout << "Topic String: " << topic << endl;
-	chan.setTopic(topic);
-	chan.setTopicMode(true);
-	cout << "Chann Topic: " << chan.getTopic() << endl;
-	Reply::RPL_TOPIC(*cl, chan);
+	_channels[num].setTopic(topic);
+	_channels[num].setTopicMode(true);
+
+	string rpl = cl->makeCLname() + " 332 " + cl->Get_nick() + " " + _channels[num].getName() + " " + _channels[num].getTopic() + "\r\n";
+	std::cout << colstring(Bgreen, rpl) << std::endl;  
+	_channels[num].Broadcast(rpl);
 }
 
 /*
