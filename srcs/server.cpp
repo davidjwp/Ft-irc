@@ -126,11 +126,11 @@ std::vector<std::string> Server::split(std::string msg) {
 void	Server::Disconnect_client(int clfd) {
 	Client cl = GetClient(clfd);
 
-	for (std::vector<Channel>::iterator it = _channels.begin(); it != _channels.end() && !_channels.empty(); it++) {
+	for (std::vector<Channel>::iterator it = _channels.begin(); it != _channels.end(); it++) {
 		it->EraseClient(cl);
-		if (it->getClient().empty())
-		{
+		if (it->getClient().empty()) {
 			it = _channels.erase(it);
+			if (_channels.empty()) break ;
 		}
 		else
 			it++;
