@@ -1,1 +1,5 @@
-break Disconnect_client
+break cMODE
+break reply
+catch catch
+break ERR_UMODEUNKNOWNFLAG
+break ERR_NOSUCHCHANNEL

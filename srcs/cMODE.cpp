@@ -107,11 +107,11 @@ void	Server::cMODE(std::vector<std::string> messages, int fd) {
 //	for channel MODE
 	try {
 		if (msg->find('\r') != std::string::npos) msg->erase(msg->find('\r'));
-		std::vector<Channel>::iterator chan = getChanName(*msg++);
+		std::vector<Channel>::iterator chan = getChanName(*msg);
 		if (!OnChannel(*cl, *chan)) {Reply::ERR_NOTONCHANNEL(*cl, chan->getName()); return ;}//HERE
 		if (chan->getOpMode() && chan->IsOperator(*cl)) {Reply::ERR_CHANOPRIVSNEEDED(*cl, chan->getName()); return ;}
 
-		if (msg == messages.end()) {Reply::RPL_CHANNELMODEIS(*cl, *chan); return ;}
+		if (++msg == messages.end()) {Reply::RPL_CHANNELMODEIS(*cl, *chan); return ;}
 		if (!Check_mod_ops(msg, cl)) return ;
 
 		short unsigned int mod = msg->at(1);
