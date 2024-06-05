@@ -63,7 +63,7 @@ void	Reply::ERR_NONICKNAMEGIVEN(const Client& cl) { cl.reply(" 431 " + cl.Get_ni
 void	Reply::ERR_ERRONEUSNICKNAME(const Client& cl, const std::string& err) { cl.reply(" 432 " + cl.Get_nick() + " " + err + " :Erroneus nickname");}
 
 //(433)
-void	Reply::ERR_NICKNAMEINUSE(const Client& cl, const std::string& err) { cl.reply(" 433 " + cl.Get_nick() + " " + err + ":Nickname is already in use");}
+void	Reply::ERR_NICKNAMEINUSE(const Client& cl, const std::string& err) { cl.reply(" 433 " + cl.Get_nick() + " " + err + " :Nickname is already in use");}
 
 //(441)
 void	Reply::ERR_USERNOTINCHANNEL(const Client& cl, const std::string nick, const Channel& chan) {cl.reply(" 441 " + cl.Get_nick() + " " + nick + " " + chan.getName() + " :They aren't on that channel");}
@@ -81,7 +81,7 @@ void	Reply::ERR_NOTREGISTERED(const Client& cl) {cl.reply(" 451 " + cl.Get_nick(
 void	Reply::ERR_NEEDMOREPARAMS(const Client& client, const std::string& com){ client.reply(" 461 " + client.Get_nick() + " " + com + " :Not enough parameters");}
 
 //(462)
-void	Reply::ERR_ALREADYREGISTERED(const Client& client){ client.reply( " 462" + client.Get_nick()+ " :You may not rerergister");}
+void	Reply::ERR_ALREADYREGISTERED(const Client& client){ client.reply( " 462 " + client.Get_nick()+ " :You may not reregister");}
 
 //(464)
 void	Reply::ERR_PASSWDMISMATCH(const Client& cl) {cl.reply(" 464 " + cl.Get_nick() + " :Password incorrect");}

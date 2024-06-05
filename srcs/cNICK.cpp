@@ -1,5 +1,7 @@
 #include "irc.hpp"
 
+#define SSTR( x ) static_cast< std::ostringstream & >(( std::ostringstream() << std::dec << x )).str()
+
 //GOOD
 void Server::cNICK(std::vector<std::string> messages, int fd){
 	std::vector<Client>::iterator cl = getClientit(fd);
@@ -24,13 +26,15 @@ void Server::cNICK(std::vector<std::string> messages, int fd){
 		return ;
 	}
 
-	if ((cl->Get_state() & NICK) && *msg == cl->Get_nick()) {
-		Reply::ERR_NICKNAMEINUSE(*cl, *msg);
+	for (std::vector<Client>::iterator clients = _clients.begin(); clients != _clients.end(); clients++)
+		if (clients->Get_nick() == *msg) {
+		Reply::ERR_NICKNAMEINUSE(*cl, *msg); 
+		*msg += SSTR(_clients.size());
+		cl->Set_nick(*msg);
+		cl->reply(" NICK " + *msg);
+		cl->isRegistered();
 		return ;
 	}
-
-	for (std::vector<Client>::iterator clients = _clients.begin(); clients != _clients.end(); clients++)
-		if (clients->Get_nick() == *msg) {Reply::ERR_NICKNAMEINUSE(*cl, *msg); return ;}
 
 	cl->Set_nick(*msg);
 	cl->reply(" NICK :" + *msg);
