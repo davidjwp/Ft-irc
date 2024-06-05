@@ -7,7 +7,7 @@ void	Server::cUSER(std::vector<std::string> messages, int fd){
 
 	if (messages.size() > 5)
 		msg = messages.begin() + 1;
-	else Reply::ERR_NEEDMOREPARAMS(*cl, messages[0]);
+	else {Reply::ERR_NEEDMOREPARAMS(*cl, messages[0]); return ;}
 
 	if (cl->Get_state() & REG) Reply::ERR_ALREADYREGISTERED(*cl); 
 
