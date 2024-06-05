@@ -18,7 +18,7 @@ void Server::cINVITE(std::vector<std::string> messages, int fd) {
 
 	std::vector<Channel>::iterator chan;
 	try {chan = getChanName(*(++msg));}
-	catch (std::exception& err) {Reply::ERR_NOSUCHCHANNEL(*cl, *(msg + 1)); return ;}
+	catch (std::exception& err) {Reply::ERR_NOSUCHCHANNEL(*cl, *msg); return ;}
 	
 	if (chan->getClient().find(cl->Get_nick()) == chan->getClient().end()) {Reply::ERR_NOTONCHANNEL(*cl, chan->getName()); return ;}
 
@@ -33,12 +33,12 @@ void Server::cINVITE(std::vector<std::string> messages, int fd) {
 	//client.add_chan(*chan);
 	//client.reply("JOIN " + chan->getName());
 	std::vector<string> vec;
+	Reply::RPL_INVITING(*cl, client.Get_nick(), *chan);
 	vec.push_back("JOIN");
 	vec.push_back(chan->getName());
 	cJOIN(vec, client.Get_clfd());
-	//Reply::RPL_INVITING(*cl, client.Get_nick(), *chan);
 	//chan->Broadcast(std::string( client.makeCLname() + " Join :" + client.Get_nick()));
-	//cl->reply(" Join :" + *it);
+	//client.reply(" Join :" + client.Get_nick());
 	//Reply::RPL_TOPIC(client, *chan);
 	//Reply::RPL_NAMREPLY (client, *chan);
 	//Reply::RPL_ENDOFNAMES(client, chan->getName());
