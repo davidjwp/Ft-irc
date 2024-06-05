@@ -16,15 +16,22 @@ void Server::cTOPIC(std::vector<std::string> messages, int fd) {
 
 	if (chan.getOpMode() && !chan.IsOperator(*cl)) {Reply::ERR_CHANOPRIVSNEEDED(*cl, *msg); return ;}
 
-	// (++msg)->erase(0);
-	std::string topic;
+	(msg++)->erase(0);
+	// msg++;
+	std::string topic = "";
 	while (msg != messages.end()) {
-	cout << "msg: " << *msg << endl;
 		topic += *msg;
 		topic += " ";
 		msg++;
 	}
+	if(topic.find('\r') != string::npos)
+		topic.erase(topic.find('\r'));
+
+	// cout << "Topic String: " << topic << endl;
 	chan.setTopic(topic);
+	chan.setTopicMode(true);
+	cout << "Chann Topic: " << chan.getTopic() << endl;
+	Reply::RPL_TOPIC(*cl, chan);
 }
 
 /*
