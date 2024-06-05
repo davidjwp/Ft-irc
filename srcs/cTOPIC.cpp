@@ -11,20 +11,20 @@ void Server::cTOPIC(std::vector<std::string> messages, int fd) {
 	Channel chan;
 	try {chan = *getChanName(*msg);}
 	catch (std::exception& err) {Reply::ERR_NOSUCHCHANNEL(*cl, *msg); return ;}
-
+	// cout << "Channel Name: " << chan.getName() << endl;
 	if (!OnChannel(*cl, chan)) {Reply::ERR_NOTONCHANNEL(*cl, *msg); return ;}
 
 	if (chan.getOpMode() && !chan.IsOperator(*cl)) {Reply::ERR_CHANOPRIVSNEEDED(*cl, *msg); return ;}
 
-	(++msg)->erase(0);
+	// (++msg)->erase(0);
 	std::string topic;
 	while (msg != messages.end()) {
+	cout << "msg: " << *msg << endl;
 		topic += *msg;
 		topic += " ";
 		msg++;
 	}
-	
-
+	chan.setTopic(topic);
 }
 
 /*
