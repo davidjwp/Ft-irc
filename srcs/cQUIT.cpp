@@ -7,8 +7,9 @@ void	Server::cQUIT(std::vector<std::string> messages, int fd) {
 	(void)messages;
 	std::vector<Channel> chans;
 	if (!((chans = cl->Get_chan()).empty())) {
-		string clientChannels = cl->Get_chan().begin()->getName();
-		for (std::vector<Channel>::iterator it = chans.begin() + 1; it != chans.end(); it++)
+		std::vector<Channel>::iterator it = chans.begin();
+		string clientChannels = it->getName();
+		while ( ++it != chans.end())
 			clientChannels += "," + it->getName();
 		std::vector<string> vec;
 		vec.push_back("PART");
