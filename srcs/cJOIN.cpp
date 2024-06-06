@@ -49,6 +49,7 @@ void Server::cJOIN(std::vector<std::string> messages, int fd){
 
 	std::vector<std::string>::iterator keyIterator = chanKeys.begin();
 	for (std::vector<std::string>::iterator it = chanNames.begin(); it != chanNames.end(); it++) {
+		if (keys && keyIterator->find('\r') != std::string::npos) keyIterator->erase(keyIterator->find('\r'));
 		if (it->at(0) != '#') { Reply::ERR_BADCHANMASK(*cl, *msg); return ;}
 
 		//channel does not exist
@@ -82,7 +83,6 @@ void Server::cJOIN(std::vector<std::string> messages, int fd){
 
 		if (chans->getLimit() != -1 && chans->getLimit() <= ChanClientAmount(*chans)) {Reply::ERR_CHANNELISFULL(*cl, chans->getName()); continue ;}
 
-		if (keys && keyIterator->find('\r') != std::string::npos) keyIterator->erase(keyIterator->find('\r'));
 		if (chans->getKeyMode() && ((keys && *keyIterator != chans->getPass()) || (!keys))) {Reply::ERR_BADCHANNELKEY(*cl, chans->getName()); continue ;}
 
 		if (chans->IsBanned(cl->Get_nick())) {Reply::ERR_BANNEDFROMCHAN(*cl, chans->getName()); continue ;}
