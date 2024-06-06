@@ -1,7 +1,7 @@
 NAME    = ircserv
 
 # Compiler and flags
-CXX      = g++
+CXX      = c++
 CXXFLAGS  = -g3 -std=c++98 -Wextra -Werror -Wall
 
 
