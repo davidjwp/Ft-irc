@@ -39,12 +39,12 @@ void Server::cJOIN(std::vector<std::string> messages, int fd){
 	}
 
 	bool keys = false;
-	std::vector<std::string> chanKeys(chanNames.size());
+	std::vector<std::string> chanKeys;
 	if (++msg != messages.end()) {
 		keys = true;
 		std::string tmp;
 		std::stringstream stream(*msg);
-		while (std::getline(stream, tmp, ',') && chanNames.size() >= chanKeys.size()) {chanKeys.push_back(tmp);}
+		while (std::getline(stream, tmp, ',') && chanNames.size() >= chanKeys.size()) chanKeys.push_back(tmp);
 	}
 
 	std::vector<std::string>::iterator keyIterator = chanKeys.begin();
@@ -77,15 +77,13 @@ void Server::cJOIN(std::vector<std::string> messages, int fd){
 			//Server::_channels.push_back(newchan);//careful with Server::
 			continue ;
 		}
-
 		//channel exists
 		if (chans->getInvit() == true && cl->getInvitChannel() != chans->getName()) {Reply::ERR_INVITEONLYCHAN(*cl, chans->getName()); continue ;}
-		//or this
-		//if (chans->getInvitMode()) {Reply::ERR_INVITEONLYCHAN(*cl, chans->getName()); continue ;}
 
 		if (chans->getLimit() != -1 && chans->getLimit() <= ChanClientAmount(*chans)) {Reply::ERR_CHANNELISFULL(*cl, chans->getName()); continue ;}
 
-		if (keys && chans->getKeyMode() && *keyIterator != chans->getPass()) {Reply::ERR_BADCHANNELKEY(*cl, chans->getName()); continue ;}
+		if (keys && keyIterator->find('\r') != std::string::npos) keyIterator->erase(keyIterator->find('\r'));
+		if (chans->getKeyMode() && ((keys && *keyIterator != chans->getPass()) || (!keys))) {Reply::ERR_BADCHANNELKEY(*cl, chans->getName()); continue ;}
 
 		if (chans->IsBanned(cl->Get_nick())) {Reply::ERR_BANNEDFROMCHAN(*cl, chans->getName()); continue ;}
 
