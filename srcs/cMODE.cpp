@@ -48,19 +48,9 @@ void Server::ChangePassword(bool mode, std::string newkey, Client& cl, Channel& 
 	}
 }
 
-void Server::ChangeOper(bool mode, std::string msg, Channel& chan, Client& cl){
-	if (chan.getOpMode() && !chan.IsOperator(cl)) {Reply::ERR_CHANOPRIVSNEEDED(cl, chan.getName()); return ;}
-	try {
-		Client cl = getClientName(msg);//find client exists using the name
-		std::map<const std::string, Client> ChanClients = chan.getClient();
-		for (std::map<const std::string, Client>::iterator it = ChanClients.begin(); it != ChanClients.end(); it++) {
-			if (it->second.Get_nick() == msg && mode && !(it->second.Get_state() & OPER)) {it->second.Set_state(OPER); return ;}
-			else if (it->second.Get_nick() == msg && !mode && it->second.Get_state() & OPER) {it->second.Set_state(-OPER); return ;}
-		}
-		(void)cl;
-	}
-	catch (std::exception& err){ Reply::ERR_USERNOTINCHANNEL(cl, msg, chan);//not right numeric
-	}
+void Server::ChangeOper(bool mode, Channel& chan, Client& cl){
+	if (mode && !chan.IsOperator(cl)) {Reply::ERR_CHANOPRIVSNEEDED(cl, chan.getName()); return ;}
+	chan.setOperMode(mode);
 }
 
 void Server::ChangeLimit(bool mode, std::string msg, Channel& chan, Client& cl) const{
@@ -113,7 +103,7 @@ void	Server::cMODE(std::vector<std::string> messages, int fd) {
 		if (msg->find('\r') != std::string::npos) msg->erase(msg->find('\r'));
 		std::vector<Channel>::iterator chan = getChanName(*msg);
 		if (!OnChannel(*cl, *chan)) {Reply::ERR_NOTONCHANNEL(*cl, chan->getName()); return ;}//HERE
-		if (chan->getOpMode() && chan->IsOperator(*cl)) {Reply::ERR_CHANOPRIVSNEEDED(*cl, chan->getName()); return ;}
+		if (chan->getOpMode() && !chan->IsOperator(*cl)) {Reply::ERR_CHANOPRIVSNEEDED(*cl, chan->getName()); return ;}
 
 		if (++msg == messages.end()) {Reply::RPL_CHANNELMODEIS(*cl, *chan); return ;}
 		if (!Check_mod_ops(msg, cl)) return ;
@@ -140,9 +130,8 @@ void	Server::cMODE(std::vector<std::string> messages, int fd) {
 				return ;
 			}
 			case ('o') : {
-				if (msg + 1 == messages.end()) {Reply::ERR_NEEDMOREPARAMS(*cl, *msg); return ;}
-				if (msg->at(0) == '+') ChangeOper(true, *(msg + 1), *chan, *cl);
-				else if (msg->at(0) == '-') ChangeOper(false, *msg, *chan, *cl);
+				if (msg->at(0) == '+') ChangeOper(true, *chan, *cl);
+				else if (msg->at(0) == '-') ChangeOper(false, *chan, *cl);
 				else {Reply::ERR_UMODEUNKNOWNFLAG(*cl); return ;}
 				return ;
 			}

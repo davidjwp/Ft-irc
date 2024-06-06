@@ -62,7 +62,7 @@ public:
 	unsigned int getClientNum(const string&);
 	vector<Channel>::iterator getChanName(const string&); 
 	unsigned int getChanNum(const  string&) ;
-	void ChangeOper(bool, string, Channel&, Client&);
+	void ChangeOper(bool, Channel&, Client&);
 	void ChangePassword(bool, string, Client&, Channel&) const;
 	void Change_topic(bool, Client&, Channel&) const;
 	void ChangeInvito(bool, Client&, Channel&) const;

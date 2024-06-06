@@ -69,6 +69,7 @@ public:
 	void setTopic(string);
 	void setTopicMode(bool);
 	void setKeyMode(bool);
+	void setOperMode(bool);
 	void addOper(Client&);
 	void remOper(Client&);
 	//void addClient();

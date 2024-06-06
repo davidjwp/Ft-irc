@@ -22,6 +22,7 @@ bool Channel::getKeyMode() const {return _key_mode;}
 bool Channel::getOpMode() const {return _op_mode;}
 
 void Channel::addOper(Client& client) {_operators[client.Get_nick()] = client;}
+void Channel::setOperMode(bool mode) {_op_mode = mode;}
 void Channel::remOper(Client& client) {_operators.erase(client.Get_nick());}
 void Channel::AddClient(Client& client) {_clients[client.Get_nick()] = client;}
 void Channel::setName(std::string name) {_name = name;}
