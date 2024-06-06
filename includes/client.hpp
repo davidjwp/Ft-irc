@@ -38,14 +38,12 @@ private:
 	int	_clfd;
 	int _state;
 	std::string _msg;
-
+	string _invited_channel;
 public:
 	Client();
 	Client& operator=(Client&);
 	Client(int clientfd, const std::string hostname);
 	~Client();
-
-
 
 	//getters
 	const std::string Get_host() const;
@@ -54,6 +52,7 @@ public:
 	const std::string Get_user() const;
 	const std::string Get_msg() const;
 	const std::string Get_realname() const;
+	const string getInvitChannel() const;
 	int	Get_state() const;
 	int Get_clfd() const;
 
@@ -66,6 +65,7 @@ public:
 	void	Set_msg(std::string);
 	void	Set_realname(std::string);
 	void	Set_state(int);
+	void	Set_InvitedChannel(string);
 	void	addMsg(std::string);
 
 	void	isRegistered();

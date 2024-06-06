@@ -59,6 +59,7 @@ public:
 	vector<string> split(string);
 	void	Disconnect_client(int);
 	Client& getClientName(const string&);
+	unsigned int getClientNum(const string&);
 	vector<Channel>::iterator getChanName(const string&); 
 	unsigned int getChanNum(const  string&) ;
 	void ChangeOper(bool, string, Channel&, Client&);

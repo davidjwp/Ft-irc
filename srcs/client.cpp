@@ -2,7 +2,7 @@
 
 Client::Client(): 
 _hostname(""), _nickname(""), _username(""), 
-_realname(""), _channels(std::vector<Channel>()), _clfd(0), _state(0), _msg(""){}
+_realname(""), _channels(std::vector<Channel>()), _clfd(0), _state(0), _msg(""), _invited_channel(""){}
 
 Client& Client::operator=( Client& cl){
 	_hostname = cl.Get_host();
@@ -32,6 +32,7 @@ const std::string	Client::Get_msg() const { return _msg;}
 const std::string Client::Get_realname() const { return _realname;}
 int	Client::Get_state() const { return _state;}
 int	Client::Get_clfd() const { return _clfd;}
+const string Client::getInvitChannel() const {return _invited_channel;}
 
 //SETTERS
 
@@ -41,6 +42,7 @@ void Client::add_chan(Channel& chan){ _channels.push_back(chan);}
 void Client::Set_user(std::string user){ if (!(_state & USER)) _state += USER; _username = user;}
 void Client::Set_msg(std::string msg){ _msg = msg;}
 void Client::Set_realname(std::string realn){ _realname = realn;}
+void Client::Set_InvitedChannel(string inv) {_invited_channel = inv;}
 void Client::Set_state(int state){ _state += state;}
 void Client::addMsg(std::string msg){ _msg += msg;}
 

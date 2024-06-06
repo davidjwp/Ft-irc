@@ -224,6 +224,16 @@ Client& Server::getClientName(const std::string& nickname){
 	return _clients.at(0);
 }
 
+unsigned int Server::getClientNum(const string& chan){
+	if (!_clients.size()) throw Error ("Error: Server::getChanNum no channel.");
+	for (struct{unsigned int num; std::vector<Client>::iterator it;}loop = {0, _clients.begin()}; loop.it != _clients.end(); loop.it++) {
+		if (loop.it->Get_nick() == chan) return loop.num;
+		loop.num++;
+	}
+	throw Error ("Error: Server::getChanNum can't find channel.");
+} 
+
+
 /*
 	takes a string and outputs a channel iterator corresponding to the string given.
 	if not found throws an exception.

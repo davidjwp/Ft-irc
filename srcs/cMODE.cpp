@@ -66,10 +66,14 @@ void Server::ChangeOper(bool mode, std::string msg, Channel& chan, Client& cl){
 void Server::ChangeLimit(bool mode, std::string msg, Channel& chan, Client& cl) const{
 	if (chan.getOpMode() && !chan.IsOperator(cl)) {Reply::ERR_CHANOPRIVSNEEDED(cl, chan.getName()); return ;}
 	if (msg.find('\r') != std::string::npos) msg.erase(msg.find('\r'));
-	char *buff;
-	size_t limit = strtol(msg.c_str(), &buff, 10);
-	if (*buff != '\0')
-		limit = 0;
+	int limit;
+	if (mode) {
+		char *buff;
+		limit = strtol(msg.c_str(), &buff, 10);
+		if (*buff != '\0')
+			limit = 0;
+		if (limit < 0) {Reply::ERR_UMODEUNKNOWNFLAG(cl); return ;}
+	}
 	mode ? chan.setLimit(limit) : chan.setLimit(-1);
 }
 
@@ -117,31 +121,40 @@ void	Server::cMODE(std::vector<std::string> messages, int fd) {
 		short unsigned int mod = msg->at(1);
 		switch (mod) {
 			case ('i') : {
-				msg->at(0) == '+' ? ChangeInvito(true, *cl, *chan) : ChangeInvito(false, *cl, *chan);
-				return ;	
+				if (msg->at(0) == '+') ChangeInvito(true, *cl, *chan);
+				else if (msg->at(0) == '-') ChangeInvito(false, *cl, *chan);
+				else {Reply::ERR_UMODEUNKNOWNFLAG(*cl); return ;}
+				return ;
 			}
 			case ('t') : {
-				msg->at(0) == '+' ? Change_topic(true, *cl, *chan) : Change_topic(false, *cl, *chan);
+				if (msg->at(0) == '+') Change_topic(true, *cl, *chan);
+				else if (msg->at(0) == '-') Change_topic(false, *cl, *chan);
+				else {Reply::ERR_UMODEUNKNOWNFLAG(*cl); return ;}
 				return ;
 			}
 			case ('k') : {
 				if (msg + 1 == messages.end()) {Reply::ERR_NEEDMOREPARAMS(*cl, *msg); return ;}
-				msg->at(0) == '+' ? ChangePassword(true, *(msg + 1), *cl, *chan) : ChangePassword(false, *(msg + 1), *cl, *chan);
+				if (msg->at(0) == '+') ChangePassword(true, *(msg + 1), *cl, *chan);
+				else if (msg->at(0) == '-') ChangePassword(false, *msg, *cl, *chan);
+				else {Reply::ERR_UMODEUNKNOWNFLAG(*cl); return ;}
 				return ;
 			}
 			case ('o') : {
 				if (msg + 1 == messages.end()) {Reply::ERR_NEEDMOREPARAMS(*cl, *msg); return ;}
-				msg->at(0) == '+' ? ChangeOper(true, *(msg + 1), *chan, *cl) : ChangeOper(false, *(msg + 1), *chan, *cl);
+				if (msg->at(0) == '+') ChangeOper(true, *(msg + 1), *chan, *cl);
+				else if (msg->at(0) == '-') ChangeOper(false, *msg, *chan, *cl);
+				else {Reply::ERR_UMODEUNKNOWNFLAG(*cl); return ;}
 				return ;
 			}
 			case ('l') : {
-				if (msg + 1 == messages.end()) {Reply::ERR_NEEDMOREPARAMS(*cl, *msg); return ;}
-				msg->at(0) == '+' ? ChangeLimit(true, *(msg + 1), *chan, *cl): ChangeLimit(false, *(msg + 1), *chan, *cl);
+				if (msg->at(0) == '+' && msg + 1 == messages.end()) {Reply::ERR_NEEDMOREPARAMS(*cl, *msg); return ;}
+				if (msg->at(0) == '+') ChangeLimit(true, *(msg + 1), *chan, *cl);
+				else if (msg->at(0) == '-') ChangeLimit(false, *msg, *chan, *cl);
+				else {Reply::ERR_UMODEUNKNOWNFLAG(*cl); return ;}
 				return ;
 			}
 			default : {Reply::ERR_UMODEUNKNOWNFLAG(*cl); return ;}
 		}
 	}
 	catch (std::exception &err){Reply::ERR_NOSUCHCHANNEL(*cl, *msg); return ;}
-	//if (*msg == cl->Get_nick()) Reply::ERR_USERSDONTMATCH(*cl);
 }

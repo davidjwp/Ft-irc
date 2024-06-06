@@ -14,6 +14,8 @@ void Server::cTOPIC(std::vector<std::string> messages, int fd) {
 	if (!OnChannel(*cl, _channels[num])) {Reply::ERR_NOTONCHANNEL(*cl, *msg); return ;}
 
 	if (_channels[num].getOpMode() && !_channels[num].IsOperator(*cl)) {Reply::ERR_CHANOPRIVSNEEDED(*cl, *msg); return ;}
+	
+	if (_channels[num].getTopicMode() && !_channels[num].IsOperator(*cl)) {Reply::ERR_CHANOPRIVSNEEDED(*cl, *msg); return ;}
 
 	(msg++)->erase(0);
 	std::string topic = "";
@@ -32,57 +34,3 @@ void Server::cTOPIC(std::vector<std::string> messages, int fd) {
 	std::cout << colstring(Bgreen, rpl) << std::endl;  
 	_channels[num].Broadcast(rpl);
 }
-
-/*
-String      getTopicStr(std::vector<String> params)
-{
-    String topic;
-
-    unsigned int i = 3;
-    topic = params[2];
-    if (topic[0] == ':')
-        topic = topic.substr(1);
-    while (i < params.size())
-    {
-        topic += " ";
-        topic += params[i];
-        i++;
-    }
-    topic = erasebr(topic);
-    return topic;
-}
-
-int		Server::cmdTopic(std::vector<String> args, Client &cl)
-{
-	try 
-	{
-		std::vector<Channel>::iterator chan = findChannelIt(chan_name);
-		if (isClientInChannel(*chan, cl.getFd()))
-		{
-			if (args.size() == 2)
-			{
-				if (chan->getTopic().empty())
-					cl.reply(NO_SET_TOPIC(cl, chan_name));
-				else
-					cl.reply(RPL_TOPIC(cl, chan_name, chan->getTopic()));
-				return (0);
-			}
-			else if (is_operator_in_Channel(cl, *chan))
-			{
-				chan->setTopic(getTopicStr(args));
-				chan->broadcast(RPL_TOPIC(cl, chan_name, chan->getTopic()));
-				return (0);
-			}
-			else
-				cl.reply(ERROR_CHANNEL_OPERATOR_NEEDED(cl, chan_name));
-		}
-		else
-			cl.reply(ERROR_NOT_ON_CHANNEL(cl, chan_name));
-	}
-	catch (const std::exception& e) 
-	{
-		cl.reply(ERROR_NO_SUCH_CHANNEL_EXISTS(cl, chan_name));
-	}
-	return (-1);
-}
-*/

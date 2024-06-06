@@ -1,5 +1,3 @@
-break cMODE
-break reply
+break cJOIN
+break cINVITE
 catch catch
-break ERR_UMODEUNKNOWNFLAG
-break ERR_NOSUCHCHANNEL

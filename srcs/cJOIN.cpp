@@ -79,7 +79,7 @@ void Server::cJOIN(std::vector<std::string> messages, int fd){
 		}
 		
 		//channel exists
-		if (chans->getInvit() == true) {Reply::ERR_INVITEONLYCHAN(*cl, chans->getName()); continue ;}
+		if (chans->getInvit() == true && cl->getInvitChannel() != chans->getName()) {Reply::ERR_INVITEONLYCHAN(*cl, chans->getName()); continue ;}
 		//or this
 		//if (chans->getInvitMode()) {Reply::ERR_INVITEONLYCHAN(*cl, chans->getName()); continue ;}
 
