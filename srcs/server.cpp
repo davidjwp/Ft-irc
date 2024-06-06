@@ -65,6 +65,8 @@ void	Server::Add_client(){
 	pollfd clpfd = {clientsocket, POLLIN, 0};
 	_pollfds.push_back(clpfd);
 
+	//if (fcntl(clientsocket, F_SETFL, O_NONBLOCK) < 0) throw Error("Error: Server::Server error changing socket to non blocking");
+
 	Clients_Status();
 }
 
@@ -94,10 +96,12 @@ std::string Server::Get_message(int clfd) {
     msg = client->Get_msg();
 
     while (true) {
-        int n = recv(clfd, buf, BUFFER_SIZE, 0); // No need for MSG_DONTWAIT since poll() ensures readiness
+        int n = recv(clfd, buf, BUFFER_SIZE, MSG_DONTWAIT); // No need for MSG_DONTWAIT since poll() ensures readiness
         if (n < 0) {
-            throw Error("Error: Server::Get_message recv error.");
-        } else if (n == 0) {
+			if (errno != EWOULDBLOCK)
+            	throw Error("Error: Server::Get_message recv error.");
+			return "";
+		} else if (n == 0) {
             throw Error("Client disconnected.");
         }
         client->addMsg(std::string(buf, n));
